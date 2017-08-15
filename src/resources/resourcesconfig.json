@@ -1,4 +1,5 @@
 {
     "PublicResources" : [
+        { "Name" : "resources", "Verbs" : ["GET/c"], "RequireAuth": false }
      ]
 }

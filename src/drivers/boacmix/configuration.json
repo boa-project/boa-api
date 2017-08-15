@@ -1,0 +1,13 @@
+{ 
+    "Roles" : {
+        "admin": [1],
+        "manager": [2]
+    },
+    "Capabilities" : {
+        "app:all" : "1",
+        "app:admin" : "2"
+    },
+    "Contexts" : {
+        "app" : 0
+    }
+}

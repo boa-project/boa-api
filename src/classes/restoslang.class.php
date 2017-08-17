@@ -25,14 +25,14 @@
  * @version 0.1
  */
 class RestosLang {
-    
+
     public static $CurrentLang = 'es';
     public static $DefaultLang = 'es';
-    
+
     private static  $_strings = array();
-    
+
     public static function get ($key, $type = 'restos', $params = null){
-        
+
         if (!$type) {
             $type = 'restos';
         }
@@ -41,28 +41,28 @@ class RestosLang {
             $s = array();
 
             $file = Restos::$Properties->LocalPath . 'langs/' . RestosLang::$CurrentLang . '/' . $type . '.php';
-            
+
             if (!file_exists($file) || is_dir($file)) {
                 $file = Restos::$Properties->LocalPath . 'langs.' . RestosLang::$DefaultLang . '.' . $type;
-                
+
                 if (!file_exists($file) || is_dir($file)) {
                     return '{{' . $key . ':' . $type . '}}';
                 }
             }
-            
+
             include $file;
-            
+
             if (count($s) == 0) {
                 return '{{{' . $key . ':' . $type . '}}}';
             }
-            
+
             RestosLang::$_strings[$type] = $s;
         }
-        
+
         if (!isset(RestosLang::$_strings[$type][$key])) {
             return '{' . $key . ':' . $type . '}';
         }
-        
+
         if (!empty($params)) {
             $a = $params;
             $str = str_replace('\\', '\\\\', RestosLang::$_strings[$type][$key]);
@@ -74,13 +74,13 @@ class RestosLang {
             return RestosLang::$_strings[$type][$key];
         }
     }
-    
+
     public static function langExists ($lang) {
-    
+
         $dir = Restos::$Properties->LocalPath . 'langs/' . $lang;
         return is_dir($dir);
     }
-    
+
     public static function currentCulture () {
         if(self::$CurrentLang == 'es') {
             return 'CO';

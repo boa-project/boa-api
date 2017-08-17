@@ -26,22 +26,78 @@
  */
 class Resources {
 
+    private $_engineobject;
     private $_query_driver;
 
-    public function __construct() {
+    public function __construct($engine) {
 
         $data = Restos::$DefaultRestGeneric->getDriverData("resources");
 
-        $this->query_driver = DriverManager::getDriver('resources', $data->Properties, 'resources.resources');
+        $this->_query_driver = DriverManager::getDriver('BoA', $data->Properties, 'resources.resources');
 
-        if (!$this->query_driver) {
-            Restos::throwException(new Exception(RestosLang::get('exception.drivernotexists', false, $data->Name)));
+        if (!$this->_query_driver) {
+            Restos::throwException(new Exception(RestosLang::get('exception.drivernotexists', false, 'BoA')));
         }
+
+        if (empty($engine)) {
+            if (property_exists($data->Properties, 'DefaultEngine')) {
+                $engine = $data->Properties->DefaultEngine;
+            }
+            else {
+                Restos::throwException(null, RestosLang::get('searchengine.empty', 'boa'), 400);
+            }
+        }
+
+        $engines = array();
+        if (property_exists($data->Properties, 'Engines')) {
+            $engines = $data->Properties->Engines;
+        }
+
+        $enabled = false;
+        $parameters = null;
+        foreach($engines as $one) {
+            if ($one->Code == $engine) {
+                $enabled = $one->Enabled;
+                $parameters = $one->Parameters;
+                break;
+            }
+        }
+
+        if (!$enabled) {
+            Restos::throwException(null, RestosLang::get('searchengine.notenabled', 'boa', $engine), 400);
+        }
+
+        $engineclass = 'SearchEngine_' . $engine;
+
+        if (!Restos::using('resources.resources.engines.' . $engine . '.' . strtolower($engineclass))) {
+            Restos::throwException(null, RestosLang::get('searchengine.notinstalled', 'boa', $engine), 500);
+        }
+
+        $this->_engineobject = new $engineclass($this->_query_driver, $parameters);
 
     }
 
-    public function excecute($query = null, $number = null, $start_on = null, $filters = null, $engine = null) {
-        return $this->query_driver->getResults($query, $number, $start_on, $filters, $engine);
+    public function execute($query = null, $number = null, $start_on = null, $filters = null) {
+        return $this->_engineobject->queryExecute($query, $number, $start_on, $filters);
+    }
+
+    public static function getSearchEngines () {
+        $data = Restos::$DefaultRestGeneric->getDriverData("resources");
+
+        $engines = array();
+
+        if (property_exists($data->Properties, 'Engines')) {
+            $engines = $data->Properties->Engines;
+        }
+
+        foreach($engines as $k => $one) {
+            if (!$one->Enabled) {
+                unset($engines[$k]);
+                break;
+            }
+        }
+
+        return $engines;
     }
 
 }

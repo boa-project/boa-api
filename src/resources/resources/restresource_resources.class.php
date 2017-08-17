@@ -55,13 +55,14 @@ class RestResource_Resources extends RestResource {
         }
         else {
 
+            $params = $this->_restGeneric->RestReceive->getParameters();
             $query = isset($params['q']) ? $params['q'] : null;
 
             if (!$query) {
                 $data = array();
             }
             else {
-                $params = $this->_restGeneric->RestReceive->getParameters();
+
                 $number     = (isset($params['(n)']) && is_numeric($params['(n)'])) ? $params['(n)'] : null;
                 $start_on   = (isset($params['(s)']) && is_numeric($params['(s)'])) ? $params['(s)'] : null;
 
@@ -74,8 +75,8 @@ class RestResource_Resources extends RestResource {
 
                 $engine = isset($params['(engine)']) ? $params['(engine)'] : null;
 
-                $resources = new Resources();
-                $data = $resources->excecute($query, $number, $start_on, $filters, $engine);
+                $resources = new Resources($engine);
+                $data = $resources->execute($query, $number, $start_on, $filters);
             }
         }
 

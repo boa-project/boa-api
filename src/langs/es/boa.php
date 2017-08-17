@@ -25,6 +25,12 @@
  * @version 0.1
  */
 
-//Generic
-$s['app.name'] = 'BoA';
+// Generic.
+$s['app.name'] = 'API de BoA';
 
+// Search engine.
+$s['searchengine.notenabled'] = 'La ingeniería de búsqueda {$a} no está habilitada.';
+$s['searchengine.notinstalled'] = 'La ingeniería de búsqueda {$a} no está instalada.';
+$s['searchengine.cronexecute'] = 'Ejecutando cron para la ingeniería de búsqueda: {$a}.';
+$s['searchengine.cronnotimplemented'] = 'Cron no implementado';
+$s['searchengine.empty'] = 'Se requiere que especifique una ingeniería de búsqueda';

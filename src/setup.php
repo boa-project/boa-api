@@ -33,8 +33,8 @@ define('RESTOS_ABSOLUTE_PATH', str_replace('setup.php', '', str_replace('\\', '/
 
 /*CODE*/
 if (RESTOS_DEBUG_MODE) {
-	ini_set('display_errors', 1);
-	ini_set('error_reporting', E_ALL);
+    ini_set('display_errors', 1);
+    ini_set('error_reporting', E_ALL);
 }
 
 spl_autoload_register('restos__autoload');

@@ -16,28 +16,51 @@
 //
 // The latest code can be found at <https://github.com/boa-project/>.
 
+Restos::using('drivers.boasql.driver_boasql');
+
 /**
- * Class to manage the resource action
+ * Class to connect with BoA System
  *
  * @author David Herney <davidherney@gmail.com>
  * @package BoA.Api
  * @copyright  2016 BoA Project
  * @license    https://www.gnu.org/licenses/agpl-3.0.html GNU Affero GPL v3 or later
  */
-class Resource {
+class Driver_BoA {
 
-    private $_query_driver;
+    /**
+     *
+     * Properties of the driver, with application level
+     * @var object
+     */
+    protected $_properties;
 
-    public function __construct() {
-
-        $data = Restos::$DefaultRestGeneric->getDriverData("resources");
-
-        $this->_query_driver = DriverManager::getDriver('BoA', $data->Properties, 'resources.resources');
-
-        if (!$this->_query_driver) {
-            Restos::throwException(new Exception(RestosLang::get('exception.drivernotexists', false, 'BoA')));
+    /**
+     *
+     *
+     * @param object $properties
+     */
+    public function __construct ($properties) {
+        if(!is_object($properties)) {
+            throw new Exception('Properties object is required.');
         }
 
+        $this->_properties = $properties;
     }
 
+    /**
+     * Return the specífic catalogue from BoA project
+     *
+     */
+    public function getCatalogue($id) {
+        return null;
+    }
+
+    /**
+     * Return all catalogues into BoA project
+     *
+     */
+    public function getCataloguesList() {
+        return array();
+    }
 }

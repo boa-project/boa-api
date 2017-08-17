@@ -16,28 +16,28 @@
 //
 // The latest code can be found at <https://github.com/boa-project/>.
 
+Restos::using('resources.resources.searchengine');
+
 /**
- * Class to manage the resource action
+ * Class to manage the Solr search engine
  *
  * @author David Herney <davidherney@gmail.com>
  * @package BoA.Api
  * @copyright  2016 BoA Project
  * @license    https://www.gnu.org/licenses/agpl-3.0.html GNU Affero GPL v3 or later
  */
-class Resource {
+class SearchEngine_solr extends SearchEngine {
 
-    private $_query_driver;
-
-    public function __construct() {
-
-        $data = Restos::$DefaultRestGeneric->getDriverData("resources");
-
-        $this->_query_driver = DriverManager::getDriver('BoA', $data->Properties, 'resources.resources');
-
-        if (!$this->_query_driver) {
-            Restos::throwException(new Exception(RestosLang::get('exception.drivernotexists', false, 'BoA')));
-        }
-
+    public function queryExecute ($oData = null, $number = null, $start_on = null, $groups = null) {
+        //ToDo: execute query
+        // Available: $this->_parameters (ResourcesConfiguration.resources.Properties.Engines[solr].Parameters)
+        // Can use $this->_driver (it is a Driver_BoA object) in order to get one catalogue or the catalogue list
+        return array();
     }
 
+    public function cron (RestosCron $cron) {
+        // ToDo: build index
+        // Use the next method in order to add log messages:
+        $cron->addLog(RestosLang::get('searchengine.solr.XX', 'boa'));
+    }
 }

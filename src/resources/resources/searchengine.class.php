@@ -16,23 +16,31 @@
 //
 // The latest code can be found at <https://github.com/boa-project/>.
 
-Restos::using('drivers.boasql.driver_boasql');
-
 /**
- * Class Driver_Resources
+ * Class to manage the type of search engines
  *
  * @author David Herney <davidherney@gmail.com>
  * @package BoA.Api
  * @copyright  2016 BoA Project
  * @license    https://www.gnu.org/licenses/agpl-3.0.html GNU Affero GPL v3 or later
  */
-class Driver_Resources extends Driver_boasql {
+class SearchEngine {
 
-    public function getResults($query, $number, $start_on, $filters = null, $engine = null) {
+    protected $_parameters;
+
+    protected $_driver;
+
+    public function __construct($driver, $parameters) {
+
+        $this->_driver     = $driver;
+        $this->_parameters = $parameters;
+    }
+
+    public function queryExcecute ($oData = null, $number = null, $start_on = null, $groups = null) {
         return array();
     }
 
-    public function getDefaultEngine() {
-        return '';
+    public function cron (RestosCron $cron) {
+        $cron->addLog(RestosLang::get('searchengine.cronnotimplemented', 'boa'));
     }
 }

@@ -53,7 +53,7 @@ class Driver_BoA {
      *
      */
     public function getCatalogue($id) {
-        return null;
+        return $this->getApiBoACall("catalogs/$id");
     }
 
     /**
@@ -61,6 +61,25 @@ class Driver_BoA {
      *
      */
     public function getCataloguesList() {
-        return array();
+        return $this->getApiBoACall("catalogs");
+    }
+
+    /**
+     * Prepare a call to BoA api for getting catalogs list or specific catalog
+     *
+     */
+    private function getApiBoACall($path) {
+        $service_url = $this->_properties->BoAAPI;
+        $curl = curl_init($service_url . "/" . $path);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        $user = md5(gethostname());
+        $pwd = "";
+        curl_setopt($curl, CURLOPT_USERPWD, "$user:$pwd");
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        //curl_setopt($curl, CURLOPT_POST, false);
+        //curl_setopt($curl, CURLOPT_POSTFIELDS, $curl_post_data);
+        $curl_response = curl_exec($curl);
+        curl_close($curl);
+        return json_decode($curl_response);
     }
 }

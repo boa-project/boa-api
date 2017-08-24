@@ -37,7 +37,6 @@ class RestResource_Resources extends RestResource {
     * @return bool
     */
     public function onGet(){
-
         $resources = $this->_restGeneric->RestReceive->getResources();
 
         // The catalog always is required.
@@ -54,7 +53,6 @@ class RestResource_Resources extends RestResource {
             }
         }
         else {
-
             $params = $this->_restGeneric->RestReceive->getParameters();
             $query = isset($params['q']) ? $params['q'] : null;
 
@@ -72,6 +70,7 @@ class RestResource_Resources extends RestResource {
                 $filters->extensions    = isset($params['(ext)']) ? $params['(ext)'] : null;
                 $filters->user          = isset($params['(user)']) ? $params['(user)'] : null;
                 $filters->connection    = isset($params['(conn)']) ? $params['(conn)'] : null;
+                $filters->catalog       = $resources->Resources->c;
 
                 $engine = isset($params['(engine)']) ? $params['(engine)'] : null;
 

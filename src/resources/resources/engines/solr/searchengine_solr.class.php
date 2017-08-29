@@ -17,7 +17,8 @@
 // The latest code can be found at <https://github.com/boa-project/>.
 
 Restos::using('resources.resources.searchengine');
-
+Restos::using('resources.resources.engines.solr.solr_boa_indexer');
+Restos::using('resources.resources.engines.solr.solr_querybuilder');
 /**
  * Class to manage the Solr search engine
  *
@@ -28,16 +29,25 @@ Restos::using('resources.resources.searchengine');
  */
 class SearchEngine_solr extends SearchEngine {
 
-    public function queryExecute ($oData = null, $number = null, $start_on = null, $groups = null) {
-        //ToDo: execute query
-        // Available: $this->_parameters (ResourcesConfiguration.resources.Properties.Engines[solr].Parameters)
-        // Can use $this->_driver (it is a Driver_BoA object) in order to get one catalogue or the catalogue list
-        return array();
+    public function queryExecute ($query = null, $number = null, $start_on = null, $groups = null) {
+        $queryBuilder = new Solr_querybuilder($this->_parameters);
+        $queryBuilder->setFilters($groups);
+        $queryBuilder->setPagination($start_on, $number);
+        return $queryBuilder->buildAndExecute($query);
     }
 
     public function cron (RestosCron $cron) {
-        // ToDo: build index
-        // Use the next method in order to add log messages:
+        $catalogs = $this->_driver->getCataloguesList();
+        //var_dump($catalogs);
+        $indexer = new Solr_boa_indexer($this->_parameters);
+        foreach ($catalogs as $catalog) {
+            if ($catalog->type != 'dco') continue; //Skip non Digital content objects catalogs
+            
+            $path = $catalog->path;
+
+            $indexer->indexCatalog($catalog);
+        }
+        //$cron->addLog(var_dump($catalogs));
         $cron->addLog(RestosLang::get('searchengine.solr.XX', 'boa'));
     }
 }

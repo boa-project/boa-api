@@ -115,7 +115,11 @@ class Solr_querybuilder {
             throw new Exception(curl_error($ch));
         }
         $result = json_decode($response);
-        if ($result->responseHeader->status != 0){
+
+        if (!is_object($result) || !property_exists($result, 'responseHeader') || !property_exists($result->responseHeader, 'status')) {
+            throw new Exception('Solr: bad response format.');
+        }
+        else if ($result->responseHeader->status != 0){
             throw new Exception($result->error->msg);
         }
         return $result->response->docs;

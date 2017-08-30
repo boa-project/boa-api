@@ -34,3 +34,6 @@ $s['searchengine.notinstalled'] = 'La ingeniería de búsqueda {$a} no está ins
 $s['searchengine.cronexecute'] = 'Ejecutando cron para la ingeniería de búsqueda: {$a}.';
 $s['searchengine.cronnotimplemented'] = 'Cron no implementado';
 $s['searchengine.empty'] = 'Se requiere que especifique una ingeniería de búsqueda';
+$s['searchengine.solr.notcatalogues'] = 'No se encontraron catálogos para indexar';
+$s['searchengine.solr.searchcatalogues'] = 'Buscando catálogos para indexar';
+$s['searchengine.solr.indexcatalogues'] = 'Indexando {$a} catálogos';

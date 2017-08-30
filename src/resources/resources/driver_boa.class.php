@@ -70,14 +70,14 @@ class Driver_BoA {
      */
     private function getApiBoACall($path) {
         $service_url = $this->_properties->BoAAPI;
-        $curl = curl_init($service_url . "/" . $path);
+
+        $curl = curl_init(rtrim($service_url, '/') . "/" . $path);
+
         curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         $user = md5(gethostname());
         $pwd = "";
         curl_setopt($curl, CURLOPT_USERPWD, "$user:$pwd");
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        //curl_setopt($curl, CURLOPT_POST, false);
-        //curl_setopt($curl, CURLOPT_POSTFIELDS, $curl_post_data);
         $curl_response = curl_exec($curl);
         curl_close($curl);
         return json_decode($curl_response);

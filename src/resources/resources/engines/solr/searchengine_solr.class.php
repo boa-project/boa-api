@@ -37,17 +37,22 @@ class SearchEngine_solr extends SearchEngine {
     }
 
     public function cron (RestosCron $cron) {
+        $cron->addLog(RestosLang::get('searchengine.solr.searchcatalogues', 'boa'));
         $catalogs = $this->_driver->getCataloguesList();
-        //var_dump($catalogs);
-        $indexer = new Solr_boa_indexer($this->_parameters);
-        foreach ($catalogs as $catalog) {
-            if ($catalog->type != 'dco') continue; //Skip non Digital content objects catalogs
-            
-            $path = $catalog->path;
 
-            $indexer->indexCatalog($catalog);
+        if (is_array($catalogs) && count($catalogs) > 0) {
+            $cron->addLog(RestosLang::get('searchengine.solr.indexcatalogues', 'boa', count($catalogs)));
+            $indexer = new Solr_boa_indexer($this->_parameters);
+            foreach ($catalogs as $catalog) {
+                if ($catalog->type != 'dco') continue; //Skip non Digital content objects catalogs
+
+                $path = $catalog->path;
+
+                $indexer->indexCatalog($catalog);
+            }
         }
-        //$cron->addLog(var_dump($catalogs));
-        $cron->addLog(RestosLang::get('searchengine.solr.XX', 'boa'));
+        else {
+            $cron->addLog(RestosLang::get('searchengine.solr.notcatalogues', 'boa'));
+        }
     }
 }

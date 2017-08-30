@@ -59,7 +59,7 @@ $s['exception.db.entitynotexists'] = 'La entidad no existe';
 
 //Cron
 $s['cron.init'] = 'Iniciando la ejecución del cron en $a.';
-$s['cron.end'] = 'La ejecución del cron a finalizado en $a.';
+$s['cron.end'] = 'La ejecución del cron ha finalizado en $a.';
 $s['cron.initclass'] = 'Iniciando la ejecución del cron para la clase $a.';
 $s['cron.successful'] = 'La ejecución del cron correspondiente a la clase $a terminó exitosamente.';
 $s['cron.error'] = 'La ejecución del cron correspondiente a la clase $a terminó con errores.';

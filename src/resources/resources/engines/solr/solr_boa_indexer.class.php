@@ -96,8 +96,12 @@ class Solr_boa_indexer {
         $docUpdates = array("p" => array(), "f" => array());
         $CHUNK_SIZE = $this->_properties->CHUNK_SIZE;
 
-        if (!$this->verifySchema($ch)) { //Ensure the schema has at least a few required fields
-            echo 'Unable to index catalog. Failed to verify solr schema!';
+        if ($this->_properties->Rebuild == "All"){
+            $this->performSolrDeleteRequest($ch, true);
+        }
+        
+        if (preg_match('/^(All|Schema)$/', $this->_properties->Rebuild) && !$this->refreshSchema($ch)) { //Ensure the schema has at least a few required fields
+            echo 'Unable to index catalog. Failed to refresh solr schema!';
             return;
         } 
 
@@ -218,9 +222,10 @@ class Solr_boa_indexer {
         }
     }
 
-    private function performSolrDeleteRequest($ch){
+    private function performSolrDeleteRequest($ch, $all = false){
         $run_id = $this->_execution_id;
-        $payload = "{\"delete\":{\"query\":\"catalog_id:{$this->_catalog_id} AND -execution_id:$run_id\"},\"commit\":{}}";
+        $query = $all ? "*:*" : "catalog_id:{$this->_catalog_id} AND -execution_id:$run_id";
+        $payload = "{\"delete\":{\"query\":\"$query\"},\"commit\":{}}";
         curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/update");
         curl_setopt($ch, CURLOPT_POST, TRUE); // -b
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
@@ -231,40 +236,91 @@ class Solr_boa_indexer {
         }
     }
 
-    private function verifySchema($ch){
+    private function refreshSchema($ch){
         curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/schema/fields");
         curl_setopt($ch, CURLOPT_HTTPGET, TRUE); // -b
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $result = curl_exec($ch);
-        $response = json_decode($result);
+        $fields = json_decode($result)->fields;
+        curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/schema/copyfields");
+        $result = curl_exec($ch);
+        $copyFields = json_decode($result)->copyFields;
+        $schemaCommands = array("delete-copy-field" => array(), "delete-field" => array(), "add-field" => array(), "add-copy-field" => array());
 
-        $requiredFields = array(
-            'updated_at'=>array('name'=>'updated_at', 'type'=>'date', 'default'=>'NOW', 'multiValued'=>false, 'indexed'=>false, 'stored'=>'true'),
-            'execution_id'=>array('name'=>'execution_id', 'type'=>'strings', 'indexed'=>true, 'stored'=>true),
-            'catalog_id'=>array('name'=>'catalog_id', 'type'=>'strings', 'indexed'=>true, 'stored'=>true)
-            );
-
-        foreach ($response->fields as $field) {
-            if (preg_match("/(updated_at|execution_id|catalog_id)/", $field->name)) {
-                unset($requiredFields[$field->name]);
+        //Remove copy fields
+        foreach($copyFields as $field){
+            if (preg_match("/^(metadata|manifest)\./", $field->source)) {
+                $schemaCommands["delete-copy-field"][] = array("source" => $field->source, "dest" => $field->dest);
+            }
+            if ($field->source == "*" && $field->dest == "_text_"){
+                $schemaCommands["delete-copy-field"][] = array("source" => $field->source, "dest" => $field->dest);
+            }
+        }
+        //Remove schema fields if they already exists
+        foreach($fields as $field){
+            if (preg_match("/^(catalog_id|execution_id|updated_at)$|^(metadata|manifest)\.\S+$/", $field->name)) {
+                $schemaCommands["delete-field"][] = array("name" => $field->name);
             }
         }
 
-        if (count($requiredFields) > 0) {
-            $payload = json_encode(array('add-field' => array_values($requiredFields)));
-            curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/schema");
-            curl_setopt($ch, CURLOPT_POST, TRUE); // -b
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-            curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
-            $result = curl_exec($ch);
-            if (curl_errno($ch)){
-                print curl_error($ch) . PHP_EOL;
+        $commands = @simplexml_load_file(realpath(dirname(__FILE__)) . "/default_schema_commands.xml");
+
+        foreach ($commands->add_field as $add_field) {
+            $schemaCommands["add-field"][] = $this->simpleXMLElementToArray($add_field);
+        }
+        
+        foreach ($commands->add_copy_field as $add_copy_field) {
+            $schemaCommands["add-copy-field"][] = $this->simpleXMLElementToArray($add_copy_field);
+        }
+
+
+        curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/schema");
+        curl_setopt($ch, CURLOPT_POST, TRUE); // -b
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
+        $uriparts = explode('/', $this->_properties->URI);
+        $solrcore = array_pop($uriparts);
+        $adminUri = implode('/', $uriparts) . "/admin/cores?action=RELOAD&core=$solrcore";
+        
+        foreach ($schemaCommands as $command => $data) {
+            $jsonData = json_encode($data);
+            $jsonPayload = "{\"$command\":$jsonData";        
+            if (!$this->performSchemaUpdate($ch, $jsonPayload, $adminUri)){
                 return false;
             }
         }
+
         return true;
     }
 
+    private function simpleXMLElementToArray($simpleXml){
+        foreach (get_object_vars($simpleXml) as $key => $value) {
+            return $value;
+        }
+    }
+
+    private function performSchemaUpdate($ch, $payload, $adminUri){
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        $result = curl_exec($ch);
+        if (curl_errno($ch)){
+            print curl_error($ch) . PHP_EOL;
+            return false;
+        }
+        
+        $result = json_decode($result);
+        if ($result && isset($result->errors)){
+            var_dump($result->errors);
+            return false;
+        }
+
+        //issue a core reload.
+        curl_setopt($ch, CURLOPT_URL, $adminUri);
+        $result = curl_exec($ch);
+        if (curl_errno($ch)){
+            print curl_error($ch) . PHP_EOL;
+            return false;
+        }
+        return true;
+    }
     /*
      * This method will return solr last_update information for all the ids in the $ids parameter
      */

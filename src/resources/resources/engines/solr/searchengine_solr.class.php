@@ -42,7 +42,7 @@ class SearchEngine_solr extends SearchEngine {
 
         if (is_array($catalogs) && count($catalogs) > 0) {
             $cron->addLog(RestosLang::get('searchengine.solr.indexcatalogues', 'boa', count($catalogs)));
-            $indexer = new Solr_boa_indexer($this->_parameters);
+            $indexer = new Solr_boa_indexer($this->_parameters, $cron);
             foreach ($catalogs as $catalog) {
                 if ($catalog->type != 'dco') continue; //Skip non Digital content objects catalogs
 

@@ -67,16 +67,24 @@ class Solr_boa_indexer {
 
     /**
      *
+     * Cron log
+     * @var object
+     */
+    private $_cron;
+
+    /**
+     *
      *
      * @param object $properties
      */
-    public function __construct ($properties) {
+    public function __construct ($properties, $cron) {
         if(!is_object($properties)) {
             throw new Exception('Properties object is required.');
         }
 
         $this->_properties = $properties;
         $this->_UTCTZ = new DateTimeZone("UTC");
+        $this->_cron = $cron;
     }
 
     /**
@@ -90,7 +98,7 @@ class Solr_boa_indexer {
         $this->_catalog_id = $catalog->alias;
 
         $entries = glob($path."/*/{.}manifest", GLOB_NOSORT|GLOB_BRACE);
-        
+
         $this->_execution_id = uniqid();
         $ch = $this->initSolrCurlRequest();
         $docUpdates = array("p" => array(), "f" => array());
@@ -99,8 +107,9 @@ class Solr_boa_indexer {
         if ($this->_properties->Rebuild == "All"){
             $this->performSolrDeleteRequest($ch, true);
         }
-        
-        if (preg_match('/^(All|Schema)$/', $this->_properties->Rebuild) && !$this->refreshSchema($ch)) { //Ensure the schema has at least a few required fields
+
+        if (preg_match('/^(All|Schema)$/', $this->_properties->Rebuild) && !$this->refreshSchema($ch)) {
+            // Ensure the schema has at least a few required fields.
             echo 'Unable to index catalog. Failed to refresh solr schema!';
             return;
         } 
@@ -112,7 +121,7 @@ class Solr_boa_indexer {
             $solr_info = $this->getDocsInfoFromSolr($ch, $ids);
             $chunk_size = count($chunk);
             foreach ($chunk as $idx => $entry) {
-                $this->visitRootObject($ch, $entry, isset($solr_info[$ids[$idx]])?$solr_info[$ids[$idx]]:NULL, $docUpdates);
+                $this->visitRootObject($ch, $entry, (isset($solr_info[$ids[$idx]]) ? $solr_info[$ids[$idx]] : NULL), $docUpdates);
 
                 //If we reached the chunck size then attempt to update the index
                 $count = count($docUpdates["p"]);
@@ -156,9 +165,9 @@ class Solr_boa_indexer {
         $id = isset($json->id) ? $json->id : $dirname;
         unset($json->id);
         $manifest = json_encode($json);
-        //echo $id . PHP_EOL;
+
         $metadata = "{}";
-        $visited = [];
+
         if (file_exists($dir."/.metadata")) {
             $hasChanged |= $this->fileHasChanged($dir."/.metadata", $last_update);
             if ($hasChanged){
@@ -180,8 +189,8 @@ class Solr_boa_indexer {
         $children_info = $this->getDocChildrenInfoFromSolr($ch, $id);
         foreach($children as $idx => $child){
             $path = str_replace(dirname($dir)."/", "", $child);
-            $info = isset($children_info[$path])?$children_info[$path]:null;
-            $this->visitChildObject($path, $child, $docUpdates, $info?$info["last_update"]:null);
+            $info = isset($children_info[$path]) ? $children_info[$path] : null;
+            $this->visitChildObject($path, $child, $docUpdates, ($info ? $info["last_update"] : null));
         }
     }
 
@@ -196,7 +205,7 @@ class Solr_boa_indexer {
         $manifestJ = new \stdClass();
         $id = $path;
         $manifest = json_encode($manifestJ);
-        //echo $id . PHP_EOL;
+
         $docUpdates["f"][] = "{\"id\":\"$id\",\"catalog_id\":\"{$this->_catalog_id}\",\"execution_id\":\"$run_id\",\"manifest\":$manifest,\"metadata\":$metadata}";
     }
 
@@ -212,13 +221,15 @@ class Solr_boa_indexer {
     }
 
     private function performSolrUpdateRequest($payload, $ch, $partial = false){
-        curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/update".($partial?"":"/json/docs"));
+        curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/update".($partial ? "" : "/json/docs"));
         curl_setopt($ch, CURLOPT_POST, TRUE); // -b
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
         $result = curl_exec($ch);
+        //var_dump($result);
+        //var_dump($payload);
         if (curl_errno($ch)){
-            print curl_error($ch) . PHP_EOL;
+            $this->_cron->addLog(curl_error($ch));
         }
     }
 
@@ -232,7 +243,7 @@ class Solr_boa_indexer {
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
         $result = curl_exec($ch);
         if (curl_errno($ch)){
-            print curl_error($ch) . PHP_EOL;
+            $this->_cron->addLog(curl_error($ch));
         }
     }
 
@@ -283,7 +294,7 @@ class Solr_boa_indexer {
         
         foreach ($schemaCommands as $command => $data) {
             $jsonData = json_encode($data);
-            $jsonPayload = "{\"$command\":$jsonData";        
+            $jsonPayload = "{\"$command\":$jsonData }";
             if (!$this->performSchemaUpdate($ch, $jsonPayload, $adminUri)){
                 return false;
             }
@@ -300,31 +311,51 @@ class Solr_boa_indexer {
 
     private function performSchemaUpdate($ch, $payload, $adminUri){
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        $result = curl_exec($ch);
+        $response = curl_exec($ch);
         if (curl_errno($ch)){
-            print curl_error($ch) . PHP_EOL;
-            return false;
-        }
-        
-        $result = json_decode($result);
-        if ($result && isset($result->errors)){
-            var_dump($result->errors);
+            $this->_cron->addLog(curl_error($ch));
             return false;
         }
 
-        //issue a core reload.
-        curl_setopt($ch, CURLOPT_URL, $adminUri);
-        $result = curl_exec($ch);
-        if (curl_errno($ch)){
-            print curl_error($ch) . PHP_EOL;
+        $result = json_decode($response);
+        if ($result && (property_exists($result, 'errors') || property_exists($result, 'error'))) {
+            if (property_exists($result, 'errors')) {
+                if (is_array($result->errors)) {
+                    foreach($result->errors as $error) {
+                        $this->_cron->addLog('ERROR: ' . implode(',', $error->errorMessages));
+                    }
+                }
+                else {
+                    $this->_cron->addLog('ERROR: Undefined error definition in Solr_boa_indexer->performSchemaUpdate');
+                }
+            }
+            else if (property_exists($result, 'error')) {
+                $this->_cron->addLog('ERROR: ' . $result->error->msg);
+            }
+            else {
+                $this->_cron->addLog('ERROR: Undefined error in Solr_boa_indexer->performSchemaUpdate');
+            }
+
             return false;
         }
+
+        $this->_cron->addLog('CURL: ' . str_replace(PHP_EOL, '', $response));
+
+        // Issue a core reload.
+        curl_setopt($ch, CURLOPT_URL, $adminUri);
+        $response = curl_exec($ch);
+        if (curl_errno($ch)){
+            $this->_cron->addLog('ERROR: ' . curl_error($ch));
+            return false;
+        }
+
+        $this->_cron->addLog('CURL: ' . str_replace(PHP_EOL, '', $response));
         return true;
     }
+
     /*
      * This method will return solr last_update information for all the ids in the $ids parameter
      */
-
     private function getDocsInfoFromSolr($ch, $ids){
         $url = $this->_properties->URI . "/get?fl=id,updated_at&ids=" . implode(",", $ids);
         curl_setopt($ch, CURLOPT_URL, $url);

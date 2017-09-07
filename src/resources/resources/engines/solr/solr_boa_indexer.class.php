@@ -342,7 +342,11 @@ class Solr_boa_indexer {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $result = curl_exec($ch);
         $info = json_decode($result);
-        $info = array_reduce($info->response->docs, array($this, 'parseDocBaseInfo'), array());
+
+        if ($info && is_object($info) && property_exists($info, 'response')) {
+            $info = array_reduce($info->response->docs, array($this, 'parseDocBaseInfo'), array());
+        }
+
         return $info;
     }
 

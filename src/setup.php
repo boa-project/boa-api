@@ -49,6 +49,12 @@ $file_properties_name = 'properties.php';
 Restos::initProperties($file_properties_name);
 Restos::load();
 
+if (stristr(PHP_OS, 'win') && !stristr(PHP_OS, 'darwin')) {
+    Restos::$OSType = 'WINDOWS';
+} else {
+    Restos::$OSType = 'UNIX';
+}
+
 if (property_exists(Restos::$Properties, 'SessionEnable') && Restos::$Properties->SessionEnable == true) {
     if (Restos::$ExecutionType == Restos::EXECUTION_CLIENT) {
         Restos::$Properties->SessionEnable == false;
@@ -69,7 +75,7 @@ function restos__autoload($class_name) {
     }
     //Other cases as special classes and drivers
     else {
-        
+
         switch ($class_name) {
             case 'drivermanager':
                 include_once RESTOS_ABSOLUTE_PATH . 'drivers/drivermanager.class.php';

@@ -25,27 +25,29 @@
  * @version 0.1
  */
 class Restos {
-    
+
     const LOG_FATAL = 1;
     const LOG_ERROR = 2;
     const LOG_DEBUG = 3;
     const LOG_INFO  = 4;
-    
+
     const EXECUTION_WEB     = 'WEB';
     const EXECUTION_CLIENT  = 'CLIENT';
 
     public static $Properties;
-    
+
     public static $AvailableResources;
 
     public static $IndexFileName = "";//"index.php";
 
     public static $DefaultRestGeneric = null;
-    
+
     public static $User = null;
-    
+
     public static $ExecutionType = 'WEB';
-    
+
+    public static $OSType = null;
+
     /**
      * If true: the Rest URI is make with resources in secuence separed with slash "/"
      * If false: the Rest URI is make with a GET parameter

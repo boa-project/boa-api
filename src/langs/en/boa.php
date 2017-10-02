@@ -25,6 +25,15 @@
  * @version 0.1
  */
 
-//Generic
-$s['app.name'] = 'BoA';
+// Generic.
+$s['app.name'] = 'BoA API';
 
+// Search engine.
+$s['searchengine.notenabled'] = 'The $a search engine is not enabled.';
+$s['searchengine.notinstalled'] = 'The $a search engine is not installed.';
+$s['searchengine.cronexecute'] = 'Executing cron by $a search engine.';
+$s['searchengine.cronnotimplemented'] = 'Cron is not implemented';
+$s['searchengine.empty'] = 'Search engine is required';
+$s['searchengine.solr.notcatalogues'] = 'Not catalogues';
+$s['searchengine.solr.searchcatalogues'] = 'Search catalogues to index';
+$s['searchengine.solr.indexcatalogues'] = 'Indexing {$a} catalogues';

@@ -34,16 +34,16 @@ class DriverManager {
     }
 
     public static function getDriver ($driver_name, $properties, $location = null) {
-        if($location && Restos::using($location . '.driver_' . $driver_name)){
+        if($location && Restos::using( strtolower($location . '.driver_' . $driver_name))){
             $class = 'driver_' . $driver_name;
             return new $class($properties);
         }
-        else if(Restos::using('drivers.' . $driver_name . '.driver_' . $driver_name)){
+        else if(Restos::using(strtolower('drivers.' . $driver_name . '.driver_' . $driver_name))){
             $class = 'driver_' . $driver_name;
             return new $class($properties);
         }
         else {
-        	return false;
+            return false;
         }
     }
 }

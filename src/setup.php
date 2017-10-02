@@ -33,8 +33,8 @@ define('RESTOS_ABSOLUTE_PATH', str_replace('setup.php', '', str_replace('\\', '/
 
 /*CODE*/
 if (RESTOS_DEBUG_MODE) {
-	ini_set('display_errors', 1);
-	ini_set('error_reporting', E_ALL);
+    ini_set('display_errors', 1);
+    ini_set('error_reporting', E_ALL);
 }
 
 spl_autoload_register('restos__autoload');
@@ -48,6 +48,12 @@ $file_properties_name = 'properties.php';
 
 Restos::initProperties($file_properties_name);
 Restos::load();
+
+if (stristr(PHP_OS, 'win') && !stristr(PHP_OS, 'darwin')) {
+    Restos::$OSType = 'WINDOWS';
+} else {
+    Restos::$OSType = 'UNIX';
+}
 
 if (property_exists(Restos::$Properties, 'SessionEnable') && Restos::$Properties->SessionEnable == true) {
     if (Restos::$ExecutionType == Restos::EXECUTION_CLIENT) {
@@ -69,7 +75,7 @@ function restos__autoload($class_name) {
     }
     //Other cases as special classes and drivers
     else {
-        
+
         switch ($class_name) {
             case 'drivermanager':
                 include_once RESTOS_ABSOLUTE_PATH . 'drivers/drivermanager.class.php';

@@ -16,8 +16,6 @@
 //
 // The latest code can be found at <https://github.com/boa-project/>.
 
-Restos::using('drivers.boasql.driver_boasql');
-
 /**
  * Class to connect with BoA System
  *

@@ -20,6 +20,7 @@
 Restos::using('resources.logs.log');
 Restos::using('resources.resources.resource');
 Restos::using('resources.resources.resources');
+Restos::using('resources.queries.query');
 
 /**
  * Class to manage the resources
@@ -74,8 +75,25 @@ class RestResource_Resources extends RestResource {
 
                 $engine = isset($params['(engine)']) ? $params['(engine)'] : null;
 
-                $resources = new Resources($engine);
-                $data = $resources->execute($query, $number, $start_on, $filters);
+                $resources_list = new Resources($engine);
+                $data = $resources_list->execute($query, $number, $start_on, $filters);
+
+                $executed_queries = Restos::getSession('resource', 'queries', 'executed', array());
+                // Only save the first 1000 queries in a session.
+                if (count($executed_queries) < 1000 && !in_array(strtolower($query), $executed_queries)) {
+                    $save_query = new Query();
+                    $save_query->catalog = $resources->Resources->c;
+                    $save_query->query = $query;
+                    $save_query->size = count($data);
+                    $save_query->time = time();
+
+                    try {
+                        $save_query->save();
+                        $executed_queries[] = strtolower($query);
+                        Restos::setSession('resource', 'queries', 'executed', $executed_queries);
+                    }
+                    catch(Exception $e) {};
+                }
             }
         }
 

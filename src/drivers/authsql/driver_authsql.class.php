@@ -44,7 +44,7 @@ class Driver_authsql extends Driver_sql implements iAuthPersistenceOperations {
      * @throws Exception - Others in PEAR MDB2.
      */
     public function __construct($properties){
-    
+
         parent::__construct($properties);
 
         if (property_exists($properties, 'PasswordSalt')) {

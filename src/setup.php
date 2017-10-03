@@ -30,6 +30,10 @@ define('RESTOS_DEBUG_MODE', true);
 
 define('RESTOS_ABSOLUTE_PATH', str_replace('setup.php', '', str_replace('\\', '/', __FILE__)));
 
+if (!defined('RESTOS_INTERNAL')) {
+    // Used by library scripts to check they are being called by internal APP.
+    define('RESTOS_INTERNAL', true);
+}
 
 /*CODE*/
 if (RESTOS_DEBUG_MODE) {
@@ -44,7 +48,7 @@ if (defined('RESTOS_CLIENT_MODE') && RESTOS_CLIENT_MODE) {
     Restos::$ExecutionType = Restos::EXECUTION_CLIENT;
 }
 
-$file_properties_name = 'properties.php';
+$file_properties_name = 'properties.json';
 
 Restos::initProperties($file_properties_name);
 Restos::load();

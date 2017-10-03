@@ -2,17 +2,17 @@
 
 /*
  *  This file is part of Restos software
- * 
+ *
  *  Restos is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  Restos is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with Restos.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -25,20 +25,20 @@
  * @version 0.1
  */
 class User extends DefaultComponent {
-    
+
     /**
      *
      * Authentication driver loading in current request
      *
-     * @var object 
+     * @var object
      */
     private static $_authDriver = null;
-        
+
     /**
      *
      * Authorization (access control) driver loading in current request
      *
-     * @var object 
+     * @var object
      */
     private static $_accDriver = null;
 
@@ -46,7 +46,7 @@ class User extends DefaultComponent {
      *
      * If exist an authenticated user
      *
-     * @var bool 
+     * @var bool
      */
     public static $IsUserAuth = false;
 
@@ -84,7 +84,7 @@ class User extends DefaultComponent {
     }
 
     public static function authenticate ($params) {
-    
+
         $auth_driver = User::authDriver();
         User::$IsUserAuth = $auth_driver->authenticate($params);
 
@@ -99,7 +99,7 @@ class User extends DefaultComponent {
     }
 
     public static function authDriver() {
-        
+
         if (User::$_authDriver == null) {
             if (empty(User::$_rest)){
                 Restos::log(Restos::LOG_ERROR, 'class_user (authenticate): component -User- was not initialized correctly');
@@ -139,17 +139,17 @@ class User extends DefaultComponent {
                     $properties = $data->Properties;
 
                     $data->Properties = $properties;
-    
+
                     User::$_accDriver = DriverManager::getDriver($data->Name, $data->Properties);
                 }
             }
         }
-        
+
         return User::$_accDriver;
     }
 
     public static function id () {
-        
+
         $auth_driver = User::authDriver();
         if (User::$IsUserAuth && $auth_driver != null) {
             return $auth_driver->getId();
@@ -158,9 +158,9 @@ class User extends DefaultComponent {
             return null;
         }
     }
-        
+
     public static function get ($property) {
-        
+
         $auth_driver = User::authDriver();
         if (User::$IsUserAuth && $auth_driver != null) {
             return $auth_driver->get($property);
@@ -169,12 +169,12 @@ class User extends DefaultComponent {
             return null;
         }
     }
-        
+
     public static function can () {
 
         $numargs = func_num_args();
         $arg_list = func_get_args();
-    
+
         $acc_driver = User::accDriver();
 
         if ($acc_driver != null) {

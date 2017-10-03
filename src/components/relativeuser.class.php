@@ -33,10 +33,10 @@ class RelativeUser extends DefaultComponent {
         else {
             Restos::using('components.user');
         }
-        
+
         User::init($rest);
     }
-    
+
     public static function available() {
         return true;
     }

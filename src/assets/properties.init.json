@@ -1,0 +1,63 @@
+{
+    "UriBase" : "<URI_BASE>",
+    "NamespaceUriBase" : "/specifications/",
+    "Resources" : ["resources"],
+    "Components" : ["GlobalConfiguration", "RelativeUser", "AppConfiguration"],
+    "SessionEnable" : true,
+    "Email" : {
+        "From" : "<EMAIL_FROM_ADDRES>",
+        "FromName" : "<EMAIL_FROM_NAME>",
+        "Type" : "SMTP",
+        "SMTPHost" : "<EMAIL_SMTP_HOST>",
+        "SMTPAuth" : true,
+        "SMTPUsername" : "<EMAIL_SMTP_USERNAME>",
+        "SMTPPassword" : "<EMAIL_SMTP_PASSWORD>",
+        "SMTPSecure" : "ssl",
+        "SMTPPort" : 465
+    },
+    "Certificate" : {
+        "Crt" : "/path/to/crt/certificate.crt",
+        "Pem" : "/path/to/pem/certificate.pem"
+    },
+    "Proxy" : {
+        "Host" : "",
+        "Port" : "",
+        "User" : "",
+        "Password" : "",
+        "Type" : "<HTTP | SOCKS5>"
+    },
+    "ResourcesConfiguration" : {
+        "RCDefault" : {
+            "DriverConnector" : "sql_persistence"
+        }
+    },
+    "Connectors" : {
+        "sql_persistence" : {
+            "Name" : "sql"
+        },
+        "rsts_persistence" : {
+            "Name" : "authsql"
+        }
+    },
+    "ComponentsConfiguration" : {
+        "Auth" : {
+            "DriverConnector" : "rsts_persistence"
+        },
+        "Access" : {
+            "Driver" : {
+                "Name" : "cmix"
+            }
+        },
+        "GlobalConfiguration" : {
+            "Properties" : {
+                "Timezone" : "UTC"
+            }
+        }
+    },
+    "Defaults" : {
+        "DBProperties" : {
+            "ConnectionString" : "<ACCESS_DATABASE_CONNECTION_STRING>",
+            "Prefix" : ""
+        }
+    }
+}

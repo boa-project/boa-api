@@ -1,7 +1,7 @@
 {
     "UriBase" : "<URI_BASE>",
     "NamespaceUriBase" : "/specifications/",
-    "Resources" : ["resources"],
+    "Resources" : ["resources", "queries"],
     "Components" : ["GlobalConfiguration", "RelativeUser", "AppConfiguration"],
     "SessionEnable" : true,
     "Email" : {

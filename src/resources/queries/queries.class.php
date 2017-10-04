@@ -16,9 +16,6 @@
 //
 // The latest code can be found at <https://github.com/boa-project/>.
 
-//Include global dependences
-Restos::using('resources.boacomplexobjectlist');
-
 /**
  * Class to manage the queries action
  *
@@ -27,11 +24,39 @@ Restos::using('resources.boacomplexobjectlist');
  * @copyright  2017 BoA Project
  * @license    https://www.gnu.org/licenses/agpl-3.0.html GNU Affero GPL v3 or later
  */
-class Queries extends BoAComplexObjectList {
+class Queries extends ComplexObjectList {
 
-    public function __construct($conditions = null, $order = null, $number = null, $start_on = null) {
+    public function __construct() {
 
-        parent::__construct('queries', $conditions, $order, $number, $start_on);
+        $data = Restos::$DefaultRestGeneric->getDriverData("RCDefault");
+
+        $queryDriver = null;
+        if($data != null) {
+            $queryDriver = DriverManager::getDriver('queries', $data->Properties, 'resources.queries');
+        }
+        else {
+            Restos::throwException(new Exception(RestosLang::get('exception.drivernotconfigured', false, 'RCDefault')));
+        }
+
+        if (!$queryDriver) {
+            Restos::throwException(new Exception(RestosLang::get('exception.drivernotexists', false, $data->Name)));
+        }
+
+        parent::__construct($queryDriver, 'queries', false);
+    }
+
+    public function getLastQueries($catalog, $query, $number, $start_on = 0) {
+        // Get the more recent queries.
+        $order = array('attempt' => 'DESC', 'size' => 'DESC', 'time' => 'DESC');
+
+        // Only can get max 20 queries.
+        if ($number > 20) {
+            $number = 20;
+        }
+
+        $query = "%$query%";
+
+        return $this->_driver->getLastQueries($catalog, $query, $order, $number, $start_on);
     }
 
 }

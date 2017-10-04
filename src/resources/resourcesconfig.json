@@ -1,6 +1,6 @@
 {
     "PublicResources" : [
-        { "Name" : "resources", "Verbs" : ["GET/c"], "RequireAuth": false },
+        { "Name" : "resources", "Verbs" : ["GET/c", "GET:1/c"], "RequireAuth": false },
         { "Name" : "queries",   "Verbs" : ["GET/c"], "RequireAuth": false }
      ]
 }

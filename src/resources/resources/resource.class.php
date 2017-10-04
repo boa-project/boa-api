@@ -24,11 +24,11 @@
  * @copyright  2016 BoA Project
  * @license    https://www.gnu.org/licenses/agpl-3.0.html GNU Affero GPL v3 or later
  */
-class Resource {
+class Resource extends ComplexObject {
 
     private $_query_driver;
 
-    public function __construct() {
+    public function __construct($id) {
 
         $data = Restos::$DefaultRestGeneric->getDriverData("resources");
 
@@ -37,6 +37,12 @@ class Resource {
         if (!$this->_query_driver) {
             Restos::throwException(new Exception(RestosLang::get('exception.drivernotexists', false, 'BoA')));
         }
+
+        //ToDo: search resource.
+
+        $data = new stdClass();
+        $data->id = $id;
+        $this->Data = $data;
 
     }
 

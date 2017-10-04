@@ -2,7 +2,7 @@
   <!--add_field name="id" type="string" indexed="true" stored="true" multiValued="false" required="true" /-->
   <add_field name="catalog_id" type="string" />
   <add_field name="execution_id" type="string" />
-  <add_field name="updated_at" type="date" indexed="false" stored="true" multiValued="false" default="NOW" />
+  <add_field name="updated_at" type="pdate" indexed="false" stored="true" multiValued="false" default="NOW" />
   <add_field name="manifest.author" type="text_general" />
   <add_field name="manifest.conexion_type" type="string" />
   <add_field name="manifest.status" type="string" />
@@ -25,7 +25,7 @@
   <add_field name="metadata.lifecycle.contribution.entity.company" type="text_general" />
   <add_field name="metadata.lifecycle.contribution.entity.email" type="text_general" />
   <add_field name="metadata.lifecycle.contribution.rol" type="text_general" />
-  <add_field name="metadata.lifecycle.contribution.date" type="tdates" />
+  <add_field name="metadata.lifecycle.contribution.date" type="pdates" />
   <add_field name="metadata.technical.format" type="text_general" />
   <add_field name="metadata.technical.location" type="text_general" />
   <add_field name="metadata.technical.requirements.type" type="text_general" />
@@ -34,12 +34,12 @@
   <add_field name="metadata.technical.requirements.maxversion" type="text_general" />
   <add_field name="metadata.technical.installation_remarks" type="text_general" />
   <add_field name="metadata.technical.other_platform_requirements" type="text_general" />
-  <add_field name="metadata.technical.duration.years" type="tlongs" />
-  <add_field name="metadata.technical.duration.months" type="tlongs" />
-  <add_field name="metadata.technical.duration.days" type="tlongs" />
-  <add_field name="metadata.technical.duration.hours" type="tlongs" />
-  <add_field name="metadata.technical.duration.minutes" type="tlongs" />
-  <add_field name="metadata.technical.duration.seconds" type="tlongs" />
+  <add_field name="metadata.technical.duration.years" type="plongs" />
+  <add_field name="metadata.technical.duration.months" type="plongs" />
+  <add_field name="metadata.technical.duration.days" type="plongs" />
+  <add_field name="metadata.technical.duration.hours" type="plongs" />
+  <add_field name="metadata.technical.duration.minutes" type="plongs" />
+  <add_field name="metadata.technical.duration.seconds" type="plongs" />
   <add_field name="metadata.technical.alternate_media" type="text_general" />
   <add_field name="metadata.educational.interactivity_type" type="text_general" />
   <add_field name="metadata.educational.learning_resource_type" type="text_general" />

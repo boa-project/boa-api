@@ -1,0 +1,45 @@
+{
+    "UriBase" : "<URI_BASE>",
+    "ResourcesConfiguration" : {
+        "resources" : {
+            "Properties" : {
+                "BoAAPI" : "<URI_BOA_ADMIN_API>",
+                "Engines" : [
+                    {
+                        "Name" : "Solr - Lucene",
+                        "Code" : "solr",
+                        "Parameters" : {
+                            "URI" : "<URI_SOLR_SERVICE>",
+                            "CHUNK_SIZE": 100,
+                            "Rebuild": "None"
+                        },
+                        "Enabled" : true,
+                        "Description" : "Use a Solr system to indexation and search resources"
+                    },
+                    {
+                        "Name" : "Fulltext",
+                        "Code" : "fulltext",
+                        "Parameters" : {
+                        },
+                        "Enabled" : false,
+                        "Description" : "Search only into metadata text, not by attributes"
+                    }
+                ],
+                "DefaultEngine" : "solr"
+            }
+        }
+    },
+    "ComponentsConfiguration" : {
+        "Auth" : {
+            "Properties" : {
+                "PasswordSalt" : "<LONG_RANDOM_SALT_STRING>"
+            }
+        }
+    },
+    "Defaults" : {
+        "DBProperties" : {
+            "ConnectionString" : "<DEFAULT_DATABASE_CONNECTION_STRING>",
+            "Prefix" : "boaapi_"
+        }
+    }
+}

@@ -1,5 +1,16 @@
 -- --------------------------------------------------------
 
+CREATE TABLE IF NOT EXISTS `boaapi_queries` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `catalog` varchar(255) NOT NULL,
+  `query` varchar(1023) NOT NULL,
+  `size` int(10) unsigned NOT NULL DEFAULT 0,
+  `time` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
 CREATE TABLE IF NOT EXISTS `boaapi_logs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,

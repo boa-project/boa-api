@@ -8,6 +8,11 @@ order deny,allow
 deny from all
 </Files>
 
+<Files properties.json>
+order deny,allow
+deny from all
+</Files>
+
 RewriteEngine on
 
 RewriteCond %{REQUEST_URI} !(.*)index.php(.*)

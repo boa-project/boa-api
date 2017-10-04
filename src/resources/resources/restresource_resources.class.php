@@ -46,8 +46,10 @@ class RestResource_Resources extends RestResource {
         }
 
         if ($resources->isSpecificResources()){
+
             try {
-                $data = new Resource($resources->getResourceId());
+                $resource = new Resource($resources->getResourceId());
+                $data = $resource->getPrototype();
             }
             catch (ObjectNotFoundException $e) {
                 Restos::throwException(null, RestosLang::get('notfound'), 404);

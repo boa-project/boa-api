@@ -56,22 +56,11 @@ class RestResource_Queries extends RestResource {
             }
             else {
 
-                // Get the more recent queries.
-                $order = array('size' => 'DESC', 'time' => 'DESC');
-
-                $conditions = array('catalog' => $resources->Resources->c,
-                                    'query' => array('operator' => 'like', 'value' => "%$query%"),
-                                    'size' => array('operator' => '>', 'value' => 0));
                 $number     = (isset($params['(n)']) && is_numeric($params['(n)'])) ? intval($params['(n)']) : 20;
                 $start_on   = (isset($params['(s)']) && is_numeric($params['(s)'])) ? intval($params['(s)']) : null;
 
-                // Only can get max 20 queries.
-                if ($number > 20) {
-                    $number = 20;
-                }
-
-                $data = new Queries($conditions, $order, $number, $start_on);
-                $data = $data->getPrototype();
+                $list = new Queries();
+                $data = $list->getLastQueries($resources->Resources->c, $query, $number, $start_on);
             }
         }
 

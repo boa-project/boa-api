@@ -24,7 +24,7 @@
  * @copyright  2016 BoA Project
  * @license    https://www.gnu.org/licenses/agpl-3.0.html GNU Affero GPL v3 or later
  */
-class Resources {
+class Resources extends ComplexObjectList {
 
     private $_engineobject;
     private $_query_driver;
@@ -78,7 +78,13 @@ class Resources {
     }
 
     public function execute($query = null, $number = null, $start_on = null, $filters = null) {
-        return $this->_engineobject->queryExecute($query, $number, $start_on, $filters);
+        $list = $this->_engineobject->queryExecute($query, $number, $start_on, $filters);
+
+        foreach($list as $one) {
+            $one->about = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . $one->id);
+        }
+
+        return $list;
     }
 
     public static function getSearchEngines () {

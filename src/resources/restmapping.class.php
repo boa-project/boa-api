@@ -1,17 +1,17 @@
 <?php
 /*
  *  This file is part of Restos software
- * 
+ *
  *  Restos is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  Restos is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with Restos.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -24,51 +24,51 @@
  * @version 0.1
  */
 class RestMapping {
-    
+
     /**
-     * 
+     *
      * Object or objects array for mapping
      * @var object or array
      */
     protected $_data;
-    
+
     /**
-     * 
+     *
      * Name of root xml element
      * @var string
      */
     protected $_resourceLabel;
-    
+
     /**
-     * 
+     *
      * Name of root xml element if $_data is array
      * @var string
      */
     protected $_resourcesGroupLabel;
-    
+
     /**
-     * 
+     *
      * The XML Document to save the answer
      * @var DOMDocument
      */
     public $XmlDocument;
-    
+
     /**
-     * 
+     *
      * The Object to save the answer in JSon request
      * @var object
      */
     public $ObjectContent;
-    
+
     /**
-     * 
+     *
      * The HTML string to save the answer
      * @var string
      */
     public $Html;
-    
+
     /**
-     * 
+     *
      * Contruct
      * @param object or array $data
      * @param string $resource
@@ -81,7 +81,7 @@ class RestMapping {
         $this->XmlDocument = new DOMDocument('1.0', 'UTF-8');
         $this->ObjectContent = new stdClass();
     }
-    
+
     public function getMapping($type) {
         switch (strtoupper($type)){
             case 'XML':
@@ -96,15 +96,15 @@ class RestMapping {
                 throw new MappingNotSupportedException(RestosLang::get('exception.mappingnotsupported', 'restos', $type));
         }
     }
-    
+
     /**
-     * 
+     *
      * Create a XML document to response
      * @return DOMDocument
      */
     public function  getXml () {
         $namespaces = array();
-        
+
         if(!is_array($this->_data)){
             if (is_object($this->_data) && get_class($this->_data) == 'stdClass') {
                 $nodes = $this->getXmlNodeCollection($this->_resourceLabel, $this->XmlDocument, (array)$this->_data, $namespaces);
@@ -117,10 +117,10 @@ class RestMapping {
         }
         else {
             $nodes = $this->getXmlNodeCollection($this->_resourceLabel, $this->XmlDocument, $this->_data, $namespaces);
-            
+
             $root = $this->XmlDocument->createElement($this->_resourcesGroupLabel);
             $root = $this->XmlDocument->appendChild($root);
-            
+
             $root->setAttributeNode(new DOMAttr('rdf:about', Restos::URIRest($this->_resourcesGroupLabel)));
 
             foreach($nodes as $node){
@@ -128,7 +128,7 @@ class RestMapping {
             }
         }
 
-        
+
         //$root->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns', Restos::URINamespace($this->_resourcesGroupLabel));
         $root->setAttribute('xmlns', Restos::URINamespace($this->_resourcesGroupLabel));
         $root->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
@@ -142,9 +142,9 @@ class RestMapping {
     }
 
     /**
-     * 
+     *
      * Create xml elements collection
-     * 
+     *
      * @param string $element_type Tag for the element name
      * @param DomDocument $document
      * @param array $collection
@@ -164,7 +164,7 @@ class RestMapping {
         }
 
         foreach($collection as $key => $data){
-            
+
             if(isset($collection['CoreProperties']) && in_array($key, $collection['CoreProperties'])) {
                 continue;
             }
@@ -172,16 +172,16 @@ class RestMapping {
             $tag_name = !$is_asociative ? $element_type : $key;
             if (is_object($data)) {
                 /*$element = $this->getXmlElement($tag_name, $document, $data, $namespaces);
-                
+
                 if (!empty($data->about)) {
                     $element->setAttributeNode(new DOMAttr('rdf:about', $data->about));
                 }
-                
+
                 $nodes[] = $element;*/
                 $data = (array)$data;
 
             }
-            
+
             if (is_array($data)){
                 if (count($data) > 0) {
 
@@ -209,7 +209,7 @@ class RestMapping {
 
         if ($is_asociative) {
             $group_nodes = $document->createElement($element_type);
-            
+
             if (!empty($collection['about'])) {
                 $group_nodes->setAttributeNode(new DOMAttr('rdf:about', $collection['about']));
             }
@@ -226,36 +226,36 @@ class RestMapping {
         }
         return $nodes;
     }
-    
+
     /**
-     * 
+     *
      * Create a xml element according to own properties
-     * 
+     *
      * @param string $element_type Tag for the element name
      * @param DomDocument $document
      * @param object $entity
      * @param array $namespaces
      */
     protected function getXmlElement($element_type, $document, $entity, &$namespaces) {
-        
+
         $global_prefix = '';
         if (property_exists($entity, 'TargetNamespace')) {
             $namespaces[] = $entity->TargetNamespace;
             $global_prefix = $entity->TargetNamespace->PrefixNamespace . ':';
         }
-        
+
         if (property_exists($entity, 'Namespaces')) {
             $namespaces = array_merge($namespaces, $entity->Namespaces);
         }
 
         $element = $document->createElement($element_type);
-        
+
         $reflection_user = new ReflectionClass($entity);
         $properties = $reflection_user->getProperties();
 
         foreach ($properties as $property){
             $prop_name = $property->getName();
-            
+
             if (is_array($entity)) {
                 if(isset($entity['CoreProperties']) && in_array($prop_name, $entity['CoreProperties'])) {
                     continue;
@@ -268,9 +268,9 @@ class RestMapping {
             }
 
             $prefix = $global_prefix;
-            
+
             //If the entity class define a namespaces collection
-            if (property_exists($entity, 'Namespaces')) { 
+            if (property_exists($entity, 'Namespaces')) {
                 foreach ($entity->Namespaces as $some_namespace) {
                     if (in_array($prop_name, $some_namespace->Properties)) {
                         $prefix = $some_namespace->PrefixNamespace . ':';
@@ -289,9 +289,9 @@ class RestMapping {
 
                     if (is_array($value)) {
                         if (count($value) > 0) {
-                            
+
                             $nodes = $this->getXmlNodeCollection($prefix . $prop_name, $document, $value, $namespaces, $isResource);
-        
+
                             foreach($nodes as $node){
                                 $element->appendChild($node);
                             }
@@ -331,13 +331,13 @@ class RestMapping {
                 $element->appendChild($node);
             }
         }
-        
+
 
         return $element;
     }
-    
+
     /**
-     * 
+     *
      * Create an object or array to response with data for json encode
      * @return object or array
      */
@@ -359,9 +359,9 @@ class RestMapping {
     }
 
     /**
-     * 
+     *
      * Create array of from collection
-     * 
+     *
      * @param array $collection
      * @return array or object
      */
@@ -370,12 +370,12 @@ class RestMapping {
         $nodes = array();
 
         foreach($collection as $key => $data){
-            
+
             if (is_object($data)) {
                 $data = (array)$data;
                 //$nodes[$key] = $this->getObjectElement($data);
             }
-            
+
             if (is_array($data)){
                 if (count($data) > 0) {
                     $nodes[$key] = $this->getObjectCollection($data);
@@ -401,24 +401,24 @@ class RestMapping {
 
         return $nodes;
     }
-    
+
     /**
-     * 
+     *
      * Create an object according to own properties
-     * 
+     *
      * @param object $entity
      * @return object
      */
     protected function getObjectElement($entity) {
-        
+
         $element = new stdClass();
-        
+
         $reflection_user = new ReflectionClass($entity);
         $properties = $reflection_user->getProperties();
-        
+
         foreach ($properties as $property){
             $prop_name = $property->getName();
-            
+
             if (!in_array($prop_name, $entity->CoreProperties)) {
 
                 $value = $entity->$prop_name;
@@ -454,13 +454,13 @@ class RestMapping {
 
         return $element;
     }
-    
+
     /**
-     * 
+     *
      * Create a HTML document to response
      * @return string
      */
-    public function getHtml() {      
+    public function getHtml() {
         if(!is_array($this->_data)){
             if (is_object($this->_data) && get_class($this->_data) == 'stdClass') {
                 $this->Html = $this->getHtmlCollection((array)$this->_data);
@@ -475,23 +475,23 @@ class RestMapping {
 
         return $this->Html;
     }
-    
+
     /**
-     * 
+     *
      * Create a HTML for a collection
-     * 
+     *
      * @param array $collection
      * @return string
      */
     protected function getHtmlCollection($collection) {
         $element = '<dl>';
-        
+
         foreach($collection as $key => $data){
             if (is_object($data)) {
                 //$element .= '<dt>' . $key . '</dt><dd>' . $this->getHtmlElement($data) . '</dd>';
                 $data = (array)$data;
             }
-            
+
             if (is_array($data)){
                 if (count($data) > 0) {
                     $element .= '<dt>' . $key . '</dt><dd>' . $this->getHtmlCollection($data) . '</dd>';
@@ -501,33 +501,33 @@ class RestMapping {
                 $element .= '<dt>' . $key . '</dt><dd>' . $data . "</dd>";
             }
         }
-        
+
         $element .= '</dl>';
-        
+
         return $element;
     }
-    
+
     /**
-     * 
+     *
      * Create a HTML for an object according to own properties
-     * 
+     *
      * @param object $entity
      * @return string
      */
     protected function getHtmlElement($entity) {
-        
+
         $element = '<dl>';
-        
+
         $reflection_user = new ReflectionClass($entity);
         $properties = $reflection_user->getProperties();
-        
+
         foreach ($properties as $property){
             $prop_name = $property->getName();
-            
+
             if (!in_array($prop_name, $entity->CoreProperties)) {
 
                 $value = $entity->$prop_name;
-                
+
                 if (!empty($value) || $value === false || $value === 0) {
                     if ($prop_name != 'seeAlso' && ($prop_name != 'about' || $value !== false)) {
                         if (is_array($value)) {
@@ -545,7 +545,7 @@ class RestMapping {
                 }
             }
         }
-        
+
         if (isset($entity->seeAlso) && $entity->seeAlso !== false) {
             if (!empty($entity->seeAlso)) {
                 $element .= '<dt>seeAlso</dt><dd>' . $entity->seeAlso . "</dd>";
@@ -554,14 +554,14 @@ class RestMapping {
                 $element .= '<dt>seeAlso:</dt><dd>' . Restos::URIRest($this->_resourcesGroupLabel . "/" . $entity->about) . "</dd>";
             }
         }
-        
+
         $element .= '</dl>';
 
         return $element;
     }
 
     /**
-     * 
+     *
      * Create a TXT document to response
      * @return string
      */
@@ -580,22 +580,22 @@ class RestMapping {
 
         return $this->Txt;
     }
-    
+
     /**
-     * 
+     *
      * Create a TXT for a collection
-     * 
+     *
      * @param array $collection
      * @return string
      */
     protected function getTxtCollection($collection) {
         $element = "";
-        
+
         foreach($collection as $key => $data){
             if (is_object($data)) {
                 $data = (array)$data;
             }
-            
+
             if (is_array($data)){
                 if (count($data) > 0) {
                     $element .= '    ' . $key . "\n";
@@ -607,33 +607,33 @@ class RestMapping {
                 $element .= '        ' . $data . "\n";
             }
         }
-        
+
         $element .= "\n";
-        
+
         return $element;
     }
-    
+
     /**
-     * 
+     *
      * Create a TXT for an object according to own properties
-     * 
+     *
      * @param object $entity
      * @return string
      */
     protected function getTxtElement($entity) {
-        
+
         $element = '';
-        
+
         $reflection_user = new ReflectionClass($entity);
         $properties = $reflection_user->getProperties();
-        
+
         foreach ($properties as $property){
             $prop_name = $property->getName();
-            
+
             if (!in_array($prop_name, $entity->CoreProperties)) {
 
                 $value = $entity->$prop_name;
-                
+
                 if (!empty($value) || $value === false || $value === 0) {
                     if ($prop_name != 'seeAlso' && ($prop_name != 'about' || $value !== false)) {
                         if (is_array($value)) {
@@ -654,7 +654,7 @@ class RestMapping {
                 }
             }
         }
-        
+
         if (isset($entity->seeAlso) && $entity->seeAlso !== false) {
             if (!empty($entity->seeAlso)) {
                 $element .= "    seeAlso\n";
@@ -665,7 +665,7 @@ class RestMapping {
                 $element .= '        ' . Restos::URIRest($this->_resourcesGroupLabel . "/" . $entity->about) . "\n";
             }
         }
-        
+
         $element .= "\n";
 
         return $element;

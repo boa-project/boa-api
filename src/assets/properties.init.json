@@ -2,7 +2,7 @@
     "UriBase" : "<URI_BASE>",
     "NamespaceUriBase" : "/specifications/",
     "Resources" : ["resources", "queries"],
-    "Components" : ["GlobalConfiguration", "RelativeUser", "AppConfiguration"],
+    "Components" : ["GlobalConfiguration", "ExternalHosting", "RelativeUser", "AppConfiguration"],
     "SessionEnable" : true,
     "Email" : {
         "From" : "<EMAIL_FROM_ADDRES>",
@@ -51,6 +51,11 @@
         "GlobalConfiguration" : {
             "Properties" : {
                 "Timezone" : "UTC"
+            }
+        },
+        "ExternalHosting" : {
+            "Properties" : {
+                "HostAllowed" : "*"
             }
         }
     },

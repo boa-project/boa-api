@@ -1,17 +1,17 @@
 <?php
 /*
  *  This file is part of Restos software
- * 
+ *
  *  Restos is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  Restos is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with Restos.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -30,29 +30,29 @@ class ComplexObject {
      * Persistence driver object
      * @var object
      */
-    private $_driver; 
-        
+    private $_driver;
+
     /**
      *
      * Entity name
      * @var string
      */
     private $_entity;
-        
+
     /**
      *
      * Entity data
      * @var object
      */
     private $_data;
-    
+
     /**
      *
      * Array of required fields
      * @var array
      */
     protected $_structure;
-    
+
     /**
      *
      * Object construct
@@ -66,13 +66,13 @@ class ComplexObject {
     public function __construct($driver, $entity_name, $id) {
         $this->_driver = $driver;
         $this->_entity = $entity_name;
-        
+
         if (empty($driver) || !is_object($driver)) {
             throw new DriverNotAvailableException(RestosLang::get('exception.drivernotavailable'));
         }
 
         $this->_structure = $driver->getEntityStructure($entity_name);
-        
+
         if (!empty($id)) {
             $res = $driver->getEntity($entity_name, array('id'=>$id));
 
@@ -87,7 +87,7 @@ class ComplexObject {
             $this->_data = new stdClass();
         }
     }
-    
+
     public function loadByFilter($conditions) {
         $res = $this->_driver->getEntity($this->_entity, $conditions);
 
@@ -98,7 +98,7 @@ class ComplexObject {
             throw new ObjectNotFoundException(RestosLang::get('exception.objectnotfound'));
         }
     }
-    
+
     /**
      *
      * Load data dependences
@@ -113,43 +113,24 @@ class ComplexObject {
      * Load an array with the object data
      *
      * @param string $resource_name The name that identifies the resource. If is not specified, entoty name is used
-     * @param int $return_core is a sum of properties to return. 1 to created_at; 2 to updated_at; 4 to created_by; 8 to updated_by
      * @return array Object prototype
      */
-    public function getPrototype ($resource_name = '', $return_core = 0) {
+    public function getPrototype ($resource_name = '') {
 
         $prototype = null;
 
         if (is_object($this->_data) && isset($this->_data->id)) {
-            
+
             $prototype = $this->_data;
-            
+
             if (empty($resource_name)) {
                 $resource_name = $this->_entity;
             }
-
-            //$prototype->about = Restos::URIRest($resource_name . '/' . $this->_data->id);
-
-            if (!in_array($return_core, array(1, 3, 5, 7, 9, 11, 13, 15))) {
-                unset($prototype->created_at);
-            }
-
-            if (!in_array($return_core, array(2, 3, 6, 10, 7, 11, 14, 15))) {
-                unset($prototype->updated_at);
-            }
-
-            if (!in_array($return_core, array(4, 5, 6, 12, 7, 13, 14, 15 ))) {
-                unset($prototype->created_by);
-            }
-
-            if (!in_array($return_core, array(8, 9, 10, 11, 12, 13, 14, 15))) {
-                unset($prototype->updated_by);
-            }
         }
-        
+
         return $prototype;
     }
-    
+
     public function setData ($data) {
         if (is_object($data)) {
             $this->_data = $data;
@@ -177,10 +158,10 @@ class ComplexObject {
         if ($data && is_object($data)) {
             $this->_data = $data;
         }
-        
+
         $values = $this->dataToValues();
         unset($values['id']);
-        
+
         if (!property_exists($this->_data, 'id') || empty($this->_data->id)) {
             $id = $this->_driver->insert($this->_entity, $values);
             if($id) {
@@ -195,7 +176,7 @@ class ComplexObject {
             return $this->_driver->update($this->_entity, $values, array('id'=>$this->_data->id));
         }
     }
-    
+
     /**
      *
      * Delete current object data.
@@ -203,10 +184,10 @@ class ComplexObject {
      * @return bool True if object is deleted, false in other case
      */
     public function remove () {
-        
+
         if (empty($this->_data) || !property_exists($this->_data, 'id') || empty($this->_data->id)) {
             $this->_data = new stdClass();
-            
+
             return true;
         }
         else {
@@ -217,7 +198,7 @@ class ComplexObject {
     /**
      *
      * Clean and change data before a percistence operation
-     * 
+     *
      * @return array
      */
     public function dataToValues() {
@@ -229,7 +210,7 @@ class ComplexObject {
         if ($data && is_object($data)) {
             $this->_data = $data;
         }
-        
+
         return $this->_structure->validateEntity($this->_data, $only_field_exists);
     }
 
@@ -237,10 +218,10 @@ class ComplexObject {
         if ($data && is_object($data)) {
             $this->_data = $data;
         }
-        
+
         return $this->_structure->validateEntity($this->_data, $only_field_exists, true, true);
     }
-    
+
     public function unsetField ($field) {
         if (isset($this->_data) && property_exists($this->_data, $field)){
             unset($this->_data->$field);

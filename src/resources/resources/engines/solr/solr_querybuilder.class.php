@@ -26,6 +26,7 @@
  */
 
 Restos::using('third_party.parensparser.parensparser');
+Restos::using('resources.resources.engines.solr.solr_client');
 
 class Solr_querybuilder {
     /**
@@ -54,11 +55,19 @@ class Solr_querybuilder {
             'sort' => null,
             'start' => null,
             'rows' => null,
-            'fl' => null,
+            'fl' => '',
             'wt' => 'json'
         );
+        $this->setMode();
     }
-
+    /*
+      . id
+  . title
+  . description
+  . url
+  . preview url (icono de previsualización).
+  . object url play (should be able to handle themes)
+*/
     /**
      *
      *
@@ -92,6 +101,19 @@ class Solr_querybuilder {
      * @param int $start First record to retrieve
      * @param int $take Number of records to retrieve
      */
+    public function setMode($mode = null){
+        if (isset($mode) && strtolower($mode) == 'full'){
+            $this->_query['fl'] = '';
+            return;
+        }
+        $this->_query['fl'] = empty($this->_properties->BasicFields) ? 'id,catalog_id' : $this->_properties->BasicFields;
+    }
+    /**
+     *
+     *
+     * @param int $start First record to retrieve
+     * @param int $take Number of records to retrieve
+     */
     public function setPagination($start, $take){
         $this->_query['start'] = $start;
         $this->_query['rows'] = $take;
@@ -105,24 +127,13 @@ class Solr_querybuilder {
     public function buildAndExecute($query){
         $this->_query['q'] = $query;
         $queryString = $this->getQueryString();
-        $ch = curl_init($this->_properties->URI . "/select?$queryString");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']); // -H
-        curl_setopt($ch, CURLOPT_HTTPGET, TRUE); // -b
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        $response = curl_exec($ch);
+        $client = new Solr_client($this->_properties->URI);
+        $docs = $client->getDocumentsByQuery($queryString, false); //Do not transform response
 
-        if (curl_errno($ch)){
-            throw new Exception(curl_error($ch));
+        if ($docs === false){
+            throw new Exception($client->errorMessage());
         }
-        $result = json_decode($response);
-
-        if (!is_object($result) || !property_exists($result, 'responseHeader') || !property_exists($result->responseHeader, 'status')) {
-            throw new Exception('Solr: bad response format.');
-        }
-        else if ($result->responseHeader->status != 0){
-            throw new Exception($result->error->msg);
-        }
-        return $result->response->docs;
+        return $docs;
     }
 
     /**

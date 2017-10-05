@@ -10,6 +10,7 @@
   <add_field name="manifest.type" type="text_general" />
   <add_field name="manifest.url" type="text_general" />
   <add_field name="manifest.version" type="string" />
+  <add_field name="manifest.customicon" type="string" />
   <add_field name="metadata.general.title" type="text_general" />
   <add_field name="metadata.general.identifier.catalog" type="text_general" />
   <add_field name="metadata.general.identifier.entry" type="text_general" />
@@ -63,7 +64,8 @@
   <add_field name="metadata.annotation.description" type="text_general" />
   <add_field name="metadata.clasification.purpose" type="text_general" />
   <add_field name="metadata.clasification.description" type="text_general" />
-  <add_field name="metadata.clasification.taxon_path" type="text_general" />
+  <add_field name="metadata.clasification.taxon_path.source" type="text_general" />
+  <add_field name="metadata.clasification.taxon_path.id" type="text_general" />
   <!--Add copyFields to support multilanguage fields-->
   <add_copy_field source="manifest.author.*" dest="manifest.author" />
   <add_copy_field source="manifest.title.*" dest="manifest.title" />
@@ -81,7 +83,8 @@
   <add_copy_field source="metadata.rights.description.*" dest="metadata.rights.description" />
   <add_copy_field source="metadata.annotation.description.*" dest="metadata.annotation.description" />
   <add_copy_field source="metadata.clasification.description.*" dest="metadata.clasification.description" />
-  <add_copy_field source="metadata.clasification.taxon_path.*" dest="metadata.clasification.taxon_path" />
+  <add_copy_field source="metadata.clasification.taxon_path.source.*" dest="metadata.clasification.taxon_path.source" />
+  <add_copy_field source="metadata.clasification.taxon_path.id.*" dest="metadata.clasification.taxon_path.id" />
   <!--Full text index-->  
   <add_copy_field source="manifest.author" dest="_text_" />
   <add_copy_field source="manifest.author.*" dest="_text_" />
@@ -128,6 +131,8 @@
   <add_copy_field source="metadata.annotation.description.*" dest="_text_" />
   <add_copy_field source="metadata.clasification.description" dest="_text_" />
   <add_copy_field source="metadata.clasification.description.*" dest="_text_" />
-  <add_copy_field source="metadata.clasification.taxon_path" dest="_text_" />
-  <add_copy_field source="metadata.clasification.taxon_path.*" dest="_text_" />
+  <add_copy_field source="metadata.clasification.taxon_path.source" dest="_text_" />
+  <add_copy_field source="metadata.clasification.taxon_path.source.*" dest="_text_" />
+  <add_copy_field source="metadata.clasification.taxon_path.id" dest="_text_" />
+  <add_copy_field source="metadata.clasification.taxon_path.id.*" dest="_text_" />
 </schema_commands>

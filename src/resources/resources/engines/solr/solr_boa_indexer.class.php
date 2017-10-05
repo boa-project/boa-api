@@ -25,6 +25,9 @@
  * @license    https://www.gnu.org/licenses/agpl-3.0.html GNU Affero GPL v3 or later
  */
 
+Restos::using('classes.curl');
+Restos::using('resources.resources.engines.solr.solr_client');
+
 if (!function_exists('glob_recursive')){
     // Does not support flag GLOB_BRACE
     function glob_recursive($pattern, $flags = 0){
@@ -52,39 +55,37 @@ class Solr_boa_indexer {
     private $_catalog_id;
     /**
      *
-     * UTC Timezone
-     * @var string
-     */
-    private $_UTCTZ;
-
-
-    /**
-     *
      * Properties of the driver, with application level
      * @var object
      */
     private $_properties;
-
     /**
      *
      * Cron log
      * @var object
      */
     private $_cron;
-
     /**
      *
      *
      * @param object $properties
      */
+
+    /**
+     *
+     * Solr_client Client
+     * @var Solr_client
+     */
+    private $_client;
+
     public function __construct ($properties, $cron) {
         if(!is_object($properties)) {
             throw new Exception('Properties object is required.');
         }
 
         $this->_properties = $properties;
-        $this->_UTCTZ = new DateTimeZone("UTC");
         $this->_cron = $cron;
+        $this->_client = new Solr_client($properties->URI);
     }
 
     /**
@@ -100,49 +101,59 @@ class Solr_boa_indexer {
         $entries = glob($path."/*/{.}manifest", GLOB_NOSORT|GLOB_BRACE);
 
         $this->_execution_id = uniqid();
-        $ch = $this->initSolrCurlRequest();
         $docUpdates = array("p" => array(), "f" => array());
         $CHUNK_SIZE = $this->_properties->CHUNK_SIZE;
+        $client = $this->_client;
 
         if ($this->_properties->Rebuild == "All"){
-            $this->performSolrDeleteRequest($ch, true);
+            if (!$client->deleteDocs("*:*")){ //Remove all docs
+                $this->addErrorLog("indexCatalog", "deleting all docs", $client->errorMessage());
+                return false;
+            } 
         }
 
-        if (preg_match('/^(All|Schema)$/', $this->_properties->Rebuild) && !$this->refreshSchema($ch)) {
-            // Ensure the schema has at least a few required fields.
-            echo 'Unable to index catalog. Failed to refresh solr schema!';
-            return;
+        if (preg_match('/^(All|Schema)$/', $this->_properties->Rebuild) && !$this->refreshSchema()) {
+            return false;
         } 
 
         foreach(array_chunk($entries, $CHUNK_SIZE) as $chunk){
             //get doc ids for this chunk
             $ids = array_map(array($this, "getIdFromManifestPath"), $chunk);
             //get index info for this chunck from lucen
-            $solr_info = $this->getDocsInfoFromSolr($ch, $ids);
+            $solr_info = $client->getDocuments($ids);
+            if ($solr_info === false){
+                $this->addErrorLog("indexCatalog", "getting documents", $client->errorMessage());
+                return false;
+            }
             $chunk_size = count($chunk);
             foreach ($chunk as $idx => $entry) {
-                $this->visitRootObject($ch, $entry, (isset($solr_info[$ids[$idx]]) ? $solr_info[$ids[$idx]] : NULL), $docUpdates);
+                $this->visitRootObject($entry, (isset($solr_info[$ids[$idx]]) ? $solr_info[$ids[$idx]] : NULL), $docUpdates);
 
                 //If we reached the chunck size then attempt to update the index
                 $count = count($docUpdates["p"]);
                 if ($count >= $CHUNK_SIZE || ($count > 0 && $idx == $chunk_size - 1)){
                     $payload = "[\n" . implode(",\n", $docUpdates["p"]) . "\n]";
-                    $this->performSolrUpdateRequest($payload, $ch, true);
+                    if (!$client->updateDocs($payload, true)){
+                        $this->addErrorLog("indexCatalog", "partially updating docs", $client->errorMessage());
+                    }
                     $docUpdates["p"] = array(); //Start a new request batch
                 }
 
                 $count = count($docUpdates["f"]);
                 if ($count >= $CHUNK_SIZE || ($count > 0 && $idx == $chunk_size - 1)){
                     $payload = "[\n" . implode(",\n", $docUpdates["f"]) . "\n]";
-                    $this->performSolrUpdateRequest($payload, $ch, false);
+                    if (!$client->updateDocs($payload, false)){
+                        $this->addErrorLog("indexCatalog", "updating docs", $client->errorMessage());
+                    }
                     $docUpdates["f"] = array(); //Start a new request batch
                 }
             }
         }
 
         //Delete all objects that were not visited, it means they were deleted
-        $this->performSolrDeleteRequest($ch);
-        curl_close($ch);
+        if (!$client->deleteDocs(array("catalog_id" => $this->_catalog_id, "-execution_id" => $this->_execution_id))){
+            $this->addErrorLog("indexCatalog", "deleting not visited documents", $client->errorMessage());
+        }
     }
 
     private function getIdFromManifestPath($manifestPath){
@@ -150,7 +161,7 @@ class Solr_boa_indexer {
         return basename($dir);
     }
 
-    private function visitRootObject($ch, $manifestPath, $solr_info, &$docUpdates){
+    private function visitRootObject($manifestPath, $solr_info, &$docUpdates){
         $run_id = $this->_execution_id;
         $dir = dirname($manifestPath);
         $dirname = basename($dir);
@@ -167,7 +178,6 @@ class Solr_boa_indexer {
         $manifest = json_encode($json);
 
         $metadata = "{}";
-
         if (file_exists($dir."/.metadata")) {
             $hasChanged |= $this->fileHasChanged($dir."/.metadata", $last_update);
             if ($hasChanged){
@@ -181,12 +191,18 @@ class Solr_boa_indexer {
         else {
             $docUpdates["p"][] = "{\"id\":\"$id\",\"execution_id\":{\"set\":\"$run_id\"}}";
         }
-        $this->visitObjectContent($id, $dir, $ch, $docUpdates);
+        $this->visitObjectContent($id, $dir, $docUpdates);
     }
 
-    private function visitObjectContent($id, $dir, $ch, &$docUpdates){
+    private function visitObjectContent($id, $dir, &$docUpdates){
         $children = glob_recursive($dir."/content/{.}*.metadata", GLOB_NOSORT|GLOB_BRACE);
-        $children_info = $this->getDocChildrenInfoFromSolr($ch, $id);
+        $client = $this->_client;
+        $children_info = $client->getDocumentChildren($id);
+        if ($children_info === false){
+            $this->addErrorLog("visitObjectContent", "getting children for $id", $client->errorMessage());
+            return false;
+        }
+        
         foreach($children as $idx => $child){
             $path = str_replace(dirname($dir)."/", "", $child);
             $info = isset($children_info[$path]) ? $children_info[$path] : null;
@@ -213,49 +229,21 @@ class Solr_boa_indexer {
         return $last_update == null || ($last_update->getTimestamp() < filemtime($path));
     }
 
-    private function initSolrCurlRequest(){
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']); // -H
-        return $ch;
-    }
+    private function refreshSchema(){
+        $client = $this->_client;
 
-    private function performSolrUpdateRequest($payload, $ch, $partial = false){
-        curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/update".($partial ? "" : "/json/docs"));
-        curl_setopt($ch, CURLOPT_POST, TRUE); // -b
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
-        $result = curl_exec($ch);
-        //var_dump($result);
-        //var_dump($payload);
-        if (curl_errno($ch)){
-            $this->_cron->addLog(curl_error($ch));
+        $fields = $client->getFields();
+        if ($fields === false){
+            $this->addErrorLog("refreshSchema", "getting fields", $client->errorMessage());
+            return false;
         }
-    }
 
-    private function performSolrDeleteRequest($ch, $all = false){
-        $run_id = $this->_execution_id;
-        $query = $all ? "*:*" : "catalog_id:{$this->_catalog_id} AND -execution_id:$run_id";
-        $payload = "{\"delete\":{\"query\":\"$query\"},\"commit\":{}}";
-        curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/update");
-        curl_setopt($ch, CURLOPT_POST, TRUE); // -b
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
-        $result = curl_exec($ch);
-        if (curl_errno($ch)){
-            $this->_cron->addLog(curl_error($ch));
+        $copyFields = $client->getCopyFields();
+        if ($copyFields === false){
+            $this->addErrorLog("refreshSchema", "getting copy fields", $client->errorMessage());
+            return false;
         }
-    }
 
-    private function refreshSchema($ch){
-        curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/schema/fields");
-        curl_setopt($ch, CURLOPT_HTTPGET, TRUE); // -b
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        $result = curl_exec($ch);
-        $fields = json_decode($result)->fields;
-        curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/schema/copyfields");
-        $result = curl_exec($ch);
-        $copyFields = json_decode($result)->copyFields;
         $schemaCommands = array("delete-copy-field" => array(), "delete-field" => array(), "add-field" => array(), "add-copy-field" => array());
 
         //Remove copy fields
@@ -284,18 +272,9 @@ class Solr_boa_indexer {
             $schemaCommands["add-copy-field"][] = $this->simpleXMLElementToArray($add_copy_field);
         }
 
-
-        curl_setopt($ch, CURLOPT_URL, $this->_properties->URI . "/schema");
-        curl_setopt($ch, CURLOPT_POST, TRUE); // -b
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
-        $uriparts = explode('/', $this->_properties->URI);
-        $solrcore = array_pop($uriparts);
-        $adminUri = implode('/', $uriparts) . "/admin/cores?action=RELOAD&core=$solrcore";
-        
         foreach ($schemaCommands as $command => $data) {
-            $jsonData = json_encode($data);
-            $jsonPayload = "{\"$command\":$jsonData }";
-            if (!$this->performSchemaUpdate($ch, $jsonPayload, $adminUri)){
+            if (!$client->runSchemaCommand($command, json_encode($data))){
+                $this->addErrorLog("refreshSchema", "running command $command", $client->errorMessage());
                 return false;
             }
         }
@@ -309,82 +288,10 @@ class Solr_boa_indexer {
         }
     }
 
-    private function performSchemaUpdate($ch, $payload, $adminUri){
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        $response = curl_exec($ch);
-        if (curl_errno($ch)){
-            $this->_cron->addLog(curl_error($ch));
-            return false;
-        }
-
-        $result = json_decode($response);
-        if ($result && (property_exists($result, 'errors') || property_exists($result, 'error'))) {
-            if (property_exists($result, 'errors')) {
-                if (is_array($result->errors)) {
-                    foreach($result->errors as $error) {
-                        $this->_cron->addLog('ERROR: ' . implode(',', $error->errorMessages));
-                    }
-                }
-                else {
-                    $this->_cron->addLog('ERROR: Undefined error definition in Solr_boa_indexer->performSchemaUpdate');
-                }
-            }
-            else if (property_exists($result, 'error')) {
-                $this->_cron->addLog('ERROR: ' . $result->error->msg);
-            }
-            else {
-                $this->_cron->addLog('ERROR: Undefined error in Solr_boa_indexer->performSchemaUpdate');
-            }
-
-            return false;
-        }
-
-        $this->_cron->addLog('CURL: ' . str_replace(PHP_EOL, '', $response));
-
-        // Issue a core reload.
-        curl_setopt($ch, CURLOPT_URL, $adminUri);
-        $response = curl_exec($ch);
-        if (curl_errno($ch)){
-            $this->_cron->addLog('ERROR: ' . curl_error($ch));
-            return false;
-        }
-
-        $this->_cron->addLog('CURL: ' . str_replace(PHP_EOL, '', $response));
-        return true;
-    }
-
     /*
      * This method will return solr last_update information for all the ids in the $ids parameter
      */
-    private function getDocsInfoFromSolr($ch, $ids){
-        $url = $this->_properties->URI . "/get?fl=id,updated_at&ids=" . implode(",", $ids);
-        curl_setopt($ch, CURLOPT_URL, $url);
-        return $this->performSolrGetRequest($ch);
-    }
-
-    private function getDocChildrenInfoFromSolr($ch, $parent_id){
-        $url = $this->_properties->URI . "/select?fl=id,updated_at&q=id:$parent_id/*&wt=json";
-        curl_setopt($ch, CURLOPT_URL, $url);
-        return $this->performSolrGetRequest($ch);
-    }
-
-    private function performSolrGetRequest($ch){
-        curl_setopt($ch, CURLOPT_HTTPGET, TRUE); // -b
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        $result = curl_exec($ch);
-        $info = json_decode($result);
-
-        if ($info && is_object($info) && property_exists($info, 'response')) {
-            $info = array_reduce($info->response->docs, array($this, 'parseDocBaseInfo'), array());
-        }
-
-        return $info;
-    }
-
-    private function parseDocBaseInfo($output, $item){ 
-        $output[$item->id] = array(
-            "last_update" => DateTime::createFromFormat('Y-m-d\TH:i:s.u+', $item->updated_at, $this->_UTCTZ)
-            );
-        return $output; 
+    private function addErrorLog($method, $context, $error){
+        $this->_cron->addLog("ERROR: On method '$method', while $context. $error");
     }
 }

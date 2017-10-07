@@ -125,9 +125,12 @@ class Solr_querybuilder {
      * @param 
      */
     public function buildAndExecute($query){
-        $this->_query['q'] = $query;
+        $this->_query['q'] = $query;        
+        $fields = $this->_query['fl'];
+        unset($this->_query['fl']);
         $queryString = $this->getQueryString();
         $client = new Solr_client($this->_properties->URI);
+        $client->setOutputFields($fields);
         $docs = $client->getDocumentsByQuery($queryString, false); //Do not transform response
 
         if ($docs === false){

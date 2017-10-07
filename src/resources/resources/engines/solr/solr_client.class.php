@@ -63,23 +63,29 @@ class Solr_client {
     /**
      *
      * Error number after request
-     * @var _errno
+     * @var Number
      */
     private $_errno;
 
     /**
      *
      * Error message after request
-     * @var _error
+     * @var String
      */
     private $_error;
 
     /**
      *
      * Parsed response
-     * @var _result
+     * @var Object
      */
     private $_result;
+    /**
+     *
+     * Output fields for getDocumentsByQuery method
+     * @var Array
+     */
+    private $_fields;
 
     public function __construct ($baseURI){
         //Initialize required private variables
@@ -111,7 +117,7 @@ class Solr_client {
         else {
             $query = $restrictions;
         }
-        $payload = "{\"delete\":{\"query\":\"$query\"},\"commit\":{}}";
+        $payload = "{\"delete\":{\"query\":\"$query\"}}"; //,\"commit\":{}
         $url = $this->_coreURI . "/update";
         $response = $this->_ch->post($url, $payload);
 
@@ -133,7 +139,7 @@ class Solr_client {
         $url = $this->_coreURI . "/update".($partial ? "" : "/json/docs");
         $this->_ch->cleanopt();
         $response = $this->_ch->post($url, $payload);
-        var_dump($response);
+        //var_dump($response);
 
         $this->handleResponse($response);
 
@@ -141,6 +147,16 @@ class Solr_client {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 
+     * Sets which fields will be returned when returned documents not transformed
+     * @param Array or comma separated list of fields
+     */
+    public function setOutputFields($fields){
+        $this->_fields = (is_array($fields) ? $fields : 
+            (empty($fields) ? array() : explode(',', $fields)));
     }
 
     /**
@@ -162,6 +178,9 @@ class Solr_client {
      */
     public function getDocumentsByQuery($query, $transform = true){
         $url = $this->_coreURI . "/select?$query";
+        if (!empty($this->_fields)){
+            $url .= "&fl=id,catalog_id,rawdoc";
+        }
         return $this->getDocs($url, $transform);
     }
 
@@ -171,7 +190,7 @@ class Solr_client {
      * @param $parend_id Id of the document root for which you are requesting children
      */
     public function getDocumentChildren($parent_id){
-        return getDocumentsByQuery("fl=id,updated_at&q=id:$parent_id/*&wt=json", true);
+        return $this->getDocumentsByQuery("fl=id,updated_at&q=id:$parent_id/*&wt=json", true);
     }
 
     /**
@@ -234,6 +253,21 @@ class Solr_client {
 
     /**
      * 
+     * Issue a Solr get documents request based on a parent_id
+     * @param $parend_id Id of the document root for which you are requesting children
+     */
+    public function commit(){
+        $url = $this->_coreURI . "/update?commit=true";
+        $response = $this->_ch->get($url);
+        $this->handleResponse($response);
+        if ($this->hasError()){
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 
      * Returns the error message of the last request if any
      */
     public function errorMessage(){
@@ -244,7 +278,7 @@ class Solr_client {
      * Issue a Solr get documents request
      * @param $url Get documents url including query and other restriction parameters
      */
-    private function getDocs($url, $parse = true){
+    private function getDocs($url, $transform = true){
         $response = $this->_ch->get($url);
 
         $this->handleResponse($response);
@@ -255,16 +289,16 @@ class Solr_client {
         $info = $this->_result;
         
         if (is_object($info) && property_exists($info, 'response')) {
-            return $parse ? 
+            return $transform ? 
                 array_reduce($info->response->docs, array($this, 'parseDocBaseInfo'), array()) :
-                $info->response->docs;
+                array_reduce($info->response->docs, array($this, 'parseDocFields'), array());
         }
         return $info;
     }
 
     /**
      * 
-     * Array reduce callback to assing last_update field on local time
+     * Array reduce callback to assign last_update field on local time
      * @param $output Carry out variable
      * @param $item Current 'reduce' item
      */
@@ -272,6 +306,55 @@ class Solr_client {
         $output[$item->id] = array(
             "last_update" => DateTime::createFromFormat('Y-m-d\TH:i:s.u+', $item->updated_at, $this->_UTCTZ)
             );
+        return $output; 
+    }
+
+    /**
+     * 
+     * Array reduce callback to assign fields from rawdoc
+     * @param $output Carry out variable
+     * @param $item Current 'reduce' item
+     */
+    private function parseDocFields($output, $item){ 
+        $obj = new StdClass(); // array("id" => $item->id, "catalog_id" => $item->catalog_id);
+        $doc = json_decode($item->rawdoc);
+
+        if (empty($this->_fields)){
+            $doc->id = $item->id;
+            $doc->catalog_id = $item->catalog_id;
+            $output[] = $doc;
+            return $output;
+        }
+
+        foreach ($this->_fields as $field) {
+            if ($field == 'id' || $field == 'catalog_id'){
+                $obj->$field = $item->$field;
+                continue;
+            }
+
+            $parts = explode('.', $field);
+            $notfound = false;
+            $partvalue = $doc;
+            foreach ($parts as $part) {
+                if (empty($partvalue) || !property_exists($partvalue, $part)){
+                    $notfound = true;
+                    break;
+                }
+                $partvalue = $partvalue->$part;
+            }
+            if ($notfound) continue;
+
+            $field = array_pop($parts);
+            $target = $obj;
+            foreach ($parts as $part) {
+                if (!property_exists($target, $part)){
+                    $target->$part = new StdClass();
+                }
+                $target = $target->$part;
+            }
+            $target->$field = $partvalue;
+        }
+        $output[] = $obj;
         return $output; 
     }
 

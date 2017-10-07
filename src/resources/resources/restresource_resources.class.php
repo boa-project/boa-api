@@ -46,6 +46,7 @@ class RestResource_Resources extends RestResource {
         }
 
         if ($resources->isSpecificResources()){
+            $params = $this->_restGeneric->RestReceive->getParameters();
 
             try {
                 $resource = new Resource($resources->getResourceId());
@@ -79,7 +80,7 @@ class RestResource_Resources extends RestResource {
                 $engine = isset($params['(engine)']) ? $params['(engine)'] : null;
 
                 $resources_list = new Resources($engine);
-                $data = $resources_list->execute($query, $number, $start_on, $filters);
+                $data = $resources_list->execute($query, $number, $start_on, $filters, $mode);
 
                 $executed_queries = Restos::getSession('resource', 'queries', 'executed', array());
                 // Only save the first 1000 queries in a session.

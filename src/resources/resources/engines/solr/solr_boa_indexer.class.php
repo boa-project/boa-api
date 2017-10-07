@@ -106,7 +106,7 @@ class Solr_boa_indexer {
         $client = $this->_client;
 
         if ($this->_properties->Rebuild == "All"){
-            if (!$client->deleteDocs("*:*")){ //Remove all docs
+            if (!$client->deleteDocs(array("catalog_id" => $this->_catalog_id, "-execution_id" => $this->_execution_id))){ //Remove all docs
                 $this->addErrorLog("indexCatalog", "deleting all docs", $client->errorMessage());
                 return false;
             } 
@@ -154,6 +154,10 @@ class Solr_boa_indexer {
         if (!$client->deleteDocs(array("catalog_id" => $this->_catalog_id, "-execution_id" => $this->_execution_id))){
             $this->addErrorLog("indexCatalog", "deleting not visited documents", $client->errorMessage());
         }
+
+        if (!$client->commit()){
+            $this->addErrorLog("indexCatalog", "doing commit", $client->errorMessage());
+        }
     }
 
     private function getIdFromManifestPath($manifestPath){
@@ -186,7 +190,9 @@ class Solr_boa_indexer {
         }
 
         if ($hasChanged){
-            $docUpdates["f"][] = "{\"id\":\"$id\",\"catalog_id\":\"{$this->_catalog_id}\",\"execution_id\":\"$run_id\",\"manifest\":$manifest,\"metadata\":$metadata}";
+            $doc = json_encode("{\"manifest\":$manifest,\"metadata\":$metadata}");
+            //var_dump(json_encode("{\"manifest\":$manifest,\"metadata\":$metadata}"));
+            $docUpdates["f"][] = "{\"id\":\"$id\",\"catalog_id\":\"{$this->_catalog_id}\",\"execution_id\":\"$run_id\",\"manifest\":$manifest,\"metadata\":$metadata,\"rawdoc\":$doc}";
         }
         else {
             $docUpdates["p"][] = "{\"id\":\"$id\",\"execution_id\":{\"set\":\"$run_id\"}}";
@@ -221,8 +227,9 @@ class Solr_boa_indexer {
         $manifestJ = new \stdClass();
         $id = $path;
         $manifest = json_encode($manifestJ);
+        $doc = json_encode("{\"manifest\":$manifest,\"metadata\":$metadata}");
 
-        $docUpdates["f"][] = "{\"id\":\"$id\",\"catalog_id\":\"{$this->_catalog_id}\",\"execution_id\":\"$run_id\",\"manifest\":$manifest,\"metadata\":$metadata}";
+        $docUpdates["f"][] = "{\"id\":\"$id\",\"catalog_id\":\"{$this->_catalog_id}\",\"execution_id\":\"$run_id\",\"manifest\":$manifest,\"metadata\":$metadata,\"rawdoc\":$doc}";
     }
 
     private function fileHasChanged($path, $last_update){
@@ -257,7 +264,7 @@ class Solr_boa_indexer {
         }
         //Remove schema fields if they already exists
         foreach($fields as $field){
-            if (preg_match("/^(catalog_id|execution_id|updated_at)$|^(metadata|manifest)\.\S+$/", $field->name)) {
+            if (preg_match("/^(catalog_id|execution_id|updated_at|rawdoc)$|^(metadata|manifest)\.\S+$/", $field->name)) {
                 $schemaCommands["delete-field"][] = array("name" => $field->name);
             }
         }

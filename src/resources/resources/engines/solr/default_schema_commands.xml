@@ -3,6 +3,7 @@
   <add_field name="catalog_id" type="string" />
   <add_field name="execution_id" type="string" />
   <add_field name="updated_at" type="pdate" indexed="false" stored="true" multiValued="false" default="NOW" />
+  <add_field name="rawdoc" type="string" indexed="false" stored="true" multiValued="false" />
   <add_field name="manifest.author" type="text_general" />
   <add_field name="manifest.conexion_type" type="string" />
   <add_field name="manifest.status" type="string" />

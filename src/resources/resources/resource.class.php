@@ -52,24 +52,28 @@ class Resource extends ComplexObject {
             Restos::throwException(null, RestosLang::get('searchengine.catalognotfound', 'boa', $catalog_id), 404);
         }
 
-        $id = base64_decode($id);
+        $decodeid = base64_decode($id, true);
+
+        if ($decodeid === false) {
+            Restos::throwException(null, RestosLang::get('searchengine.badid', 'boa', $id), 404);
+        }
 
         $manifest = "{}";
         $path = $catalog->path;
-        $metadataPath = "";        
+        $metadataPath = "";
 
-        if (!file_exists($path . "/" . $id)){
+        if (!file_exists($path . "/" . $decodeid)){
             Restos::throwException(null, RestosLang::get('notfound'), 404);
         }
 
-        if (strpos($id, '/') === false){
-            $manifestPath = $path . "/" . $id . "/.manifest";
+        if (strpos($decodeid, '/') === false){
+            $manifestPath = $path . "/" . $decodeid . "/.manifest";
             $manifest = file_get_contents($manifestPath);
-            $metadataPath = $path . "/" . $id . "/.metadata";
+            $metadataPath = $path . "/" . $decodeid . "/.metadata";
         }
         else {
-            $basedir = dirname($id);
-            $filename = basename($id);
+            $basedir = dirname($decodeid);
+            $filename = basename($decodeid);
             $metadataPath = $path . "/" . $basedir . "/." . $filename . ".metadata";
         }
 
@@ -78,7 +82,7 @@ class Resource extends ComplexObject {
             $metadata = file_get_contents($metadataPath);
         }
         $data = json_decode("{\"manifest\":$manifest,\"metadata\":$metadata}");
-        $data->id = $id;
+        $data->id = $decodeid;
         return $data;
     }
 

@@ -219,13 +219,13 @@ class Solr_boa_indexer {
     private function visitChildObject($path, $metadataPath, &$docUpdates, $last_update){
         $run_id = $this->_execution_id;
         $hasChanged = $this->fileHasChanged($metadataPath, $last_update);
+        $id = dirname($path) . "/" . substr(str_replace('.metadata', '', basename($path)), 1);
         if (!$hasChanged){
-            $docUpdates["p"][] = "{\"id\":\"$path\",\"execution_id\":{\"set\":\"$run_id\"}}";
+            $docUpdates["p"][] = "{\"id\":\"$id\",\"execution_id\":{\"set\":\"$run_id\"}}";
             return;
         }
         $metadata = file_get_contents($metadataPath);
         $manifestJ = new \stdClass();
-        $id = dirname($path) . "/" . substr(str_replace('.metadata', '', basename($path)), 1);
         $manifest = json_encode($manifestJ);
         $doc = json_encode("{\"manifest\":$manifest,\"metadata\":$metadata}");
 

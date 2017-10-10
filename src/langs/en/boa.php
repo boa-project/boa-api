@@ -37,5 +37,5 @@ $s['searchengine.empty'] = 'Search engine is required';
 $s['searchengine.solr.notcatalogues'] = 'Not catalogues';
 $s['searchengine.solr.searchcatalogues'] = 'Search catalogues to index';
 $s['searchengine.solr.indexcatalogues'] = 'Indexing {$a} catalogues';
-$s['searchengine.catalognotfound'] = 'Catalog {$c} not found';
+$s['searchengine.catalognotfound'] = 'Catalog {$a} not found';
 $s['searchengine.badid'] = 'Bad formed id ({$a})';

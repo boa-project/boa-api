@@ -28,7 +28,7 @@ class Resource extends ComplexObject {
 
     private $_query_driver;
 
-    public function __construct($id) {
+    public function __construct($catalog_id, $id) {
 
         $data = Restos::$DefaultRestGeneric->getDriverData("resources");
 
@@ -38,12 +38,48 @@ class Resource extends ComplexObject {
             Restos::throwException(new Exception(RestosLang::get('exception.drivernotexists', false, 'BoA')));
         }
 
-        //ToDo: search resource.
-
-        $data = new stdClass();
-        $data->id = $id;
+        $data = $this->loadData($catalog_id, $id);
+        $data->about = Restos::URIRest('c/' . $catalog_id . '/resources/' . $id);
         $this->Data = $data;
 
+    }
+
+
+    private function loadData($catalog_id, $id){
+        $catalog = $this->_query_driver->getCatalogue($catalog_id);
+
+        if ($catalog == null){
+            Restos::throwException(null, RestosLang::get('searchengine.catalognotfound', 'boa', $catalog_id), 404);
+        }
+
+        $id = base64_decode($id);
+
+        $manifest = "{}";
+        $path = $catalog->path;
+        $metadataPath = "";        
+
+        if (!file_exists($path . "/" . $id)){
+            Restos::throwException(null, RestosLang::get('notfound'), 404);
+        }
+
+        if (strpos($id, '/') === false){
+            $manifestPath = $path . "/" . $id . "/.manifest";
+            $manifest = file_get_contents($manifestPath);
+            $metadataPath = $path . "/" . $id . "/.metadata";
+        }
+        else {
+            $basedir = dirname($id);
+            $filename = basename($id);
+            $metadataPath = $path . "/" . $basedir . "/." . $filename . ".metadata";
+        }
+
+        $metadata = "{}";
+        if (file_exists($metadataPath)) {
+            $metadata = file_get_contents($metadataPath);
+        }
+        $data = json_decode("{\"manifest\":$manifest,\"metadata\":$metadata}");
+        $data->id = $id;
+        return $data;
     }
 
 }

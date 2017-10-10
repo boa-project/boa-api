@@ -127,7 +127,7 @@ class Solr_querybuilder {
     public function buildAndExecute($query){
         $this->_query['q'] = $query;        
         $fields = $this->_query['fl'];
-        unset($this->_query['fl']);
+        unset($this->_query['fl']); //Do not set the fields options on the api query
         $queryString = $this->getQueryString();
         $client = new Solr_client($this->_properties->URI);
         $client->setOutputFields($fields);

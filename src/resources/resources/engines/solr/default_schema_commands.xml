@@ -103,23 +103,24 @@
   <add_copy_field source="metadata.general.keywords.*" dest="_text_" />
   <add_copy_field source="metadata.general.coverage" dest="_text_" />
   <add_copy_field source="metadata.general.coverage.*" dest="_text_" />
-  <add_copy_field source="metadata.lifecycle.version" dest="_text_" />
-  <add_copy_field source="metadata.lifecycle.version.*" dest="_text_" />
+  <!--add_copy_field source="metadata.lifecycle.version" dest="_text_" />
+  <add_copy_field source="metadata.lifecycle.version.*" dest="_text_" /-->
   <add_copy_field source="metadata.lifecycle.contribution.entity.name" dest="_text_" />
   <add_copy_field source="metadata.lifecycle.contribution.entity.lastname" dest="_text_" />
   <add_copy_field source="metadata.lifecycle.contribution.entity.company" dest="_text_" />
   <add_copy_field source="metadata.lifecycle.contribution.entity.email" dest="_text_" />
   <add_copy_field source="metadata.technical.format" dest="_text_" />
   <add_copy_field source="metadata.technical.location" dest="_text_" />
-  <add_copy_field source="metadata.technical.requirements.minversion" dest="_text_" />
+  <!--add_copy_field source="metadata.technical.requirements.minversion" dest="_text_" />
   <add_copy_field source="metadata.technical.requirements.maxversion" dest="_text_" />
   <add_copy_field source="metadata.technical.installation_remarks" dest="_text_" />
   <add_copy_field source="metadata.technical.installation_remarks.*" dest="_text_" />
   <add_copy_field source="metadata.technical.other_platform_requirements" dest="_text_" />
   <add_copy_field source="metadata.technical.other_platform_requirements.*" dest="_text_" />
+  <add_copy_field source="metadata.technical.alternate_media" dest="_text_" />
   <add_copy_field source="metadata.technical.alternate_media.*" dest="_text_" />
   <add_copy_field source="metadata.educational.typical_age_range" dest="_text_" />
-  <add_copy_field source="metadata.educational.typical_age_range.*" dest="_text_" />
+  <add_copy_field source="metadata.educational.typical_age_range.*" dest="_text_" /-->
   <add_copy_field source="metadata.educational.description" dest="_text_" />
   <add_copy_field source="metadata.educational.description.*" dest="_text_" />
   <add_copy_field source="metadata.rights.description" dest="_text_" />
@@ -132,8 +133,8 @@
   <add_copy_field source="metadata.annotation.description.*" dest="_text_" />
   <add_copy_field source="metadata.clasification.description" dest="_text_" />
   <add_copy_field source="metadata.clasification.description.*" dest="_text_" />
-  <add_copy_field source="metadata.clasification.taxon_path.source" dest="_text_" />
-  <add_copy_field source="metadata.clasification.taxon_path.source.*" dest="_text_" />
+  <!--add_copy_field source="metadata.clasification.taxon_path.source" dest="_text_" />
+  <add_copy_field source="metadata.clasification.taxon_path.source.*" dest="_text_" /-->
   <add_copy_field source="metadata.clasification.taxon_path.id" dest="_text_" />
   <add_copy_field source="metadata.clasification.taxon_path.id.*" dest="_text_" />
 </schema_commands>

@@ -37,3 +37,4 @@ $s['searchengine.empty'] = 'Se requiere que especifique una ingeniería de búsq
 $s['searchengine.solr.notcatalogues'] = 'No se encontraron catálogos para indexar';
 $s['searchengine.solr.searchcatalogues'] = 'Buscando catálogos para indexar';
 $s['searchengine.solr.indexcatalogues'] = 'Indexando {$a} catálogos';
+$s['searchengine.catalognotfound'] = 'No se encontró el catálogo {$c}';

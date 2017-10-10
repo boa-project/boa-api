@@ -225,7 +225,7 @@ class Solr_boa_indexer {
         }
         $metadata = file_get_contents($metadataPath);
         $manifestJ = new \stdClass();
-        $id = $path;
+        $id = dirname($path) . "/" . substr(str_replace('.metadata', '', basename($path)), 1);
         $manifest = json_encode($manifestJ);
         $doc = json_encode("{\"manifest\":$manifest,\"metadata\":$metadata}");
 

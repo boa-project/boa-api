@@ -81,7 +81,7 @@ class Resources extends ComplexObjectList {
         $list = $this->_engineobject->queryExecute($query, $number, $start_on, $filters, $mode);
 
         foreach($list as $one) {
-            $one->about = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . $one->id);
+            $one->about = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . base64_encode($one->id));
         }
 
         return $list;

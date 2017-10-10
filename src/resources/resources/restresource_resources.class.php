@@ -49,7 +49,7 @@ class RestResource_Resources extends RestResource {
             $params = $this->_restGeneric->RestReceive->getParameters();
 
             try {
-                $resource = new Resource($resources->getResourceId());
+                $resource = new Resource($resources->Resources->c, $resources->getResourceId());
                 $data = $resource->getPrototype();
             }
             catch (ObjectNotFoundException $e) {

@@ -36,7 +36,7 @@ class SearchEngine {
         $this->_parameters = $parameters;
     }
 
-    public function queryExecute ($query = null, $number = null, $start_on = null, $groups = null) {
+    public function queryExecute ($query = null, $number = null, $start_on = null, $groups = null, $mode = null) {
         return array();
     }
 

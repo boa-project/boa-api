@@ -28,7 +28,7 @@ class Resource extends ComplexObject {
 
     private $_query_driver;
 
-    public function __construct($id) {
+    public function __construct($catalog_id, $id) {
 
         $data = Restos::$DefaultRestGeneric->getDriverData("resources");
 
@@ -38,12 +38,66 @@ class Resource extends ComplexObject {
             Restos::throwException(new Exception(RestosLang::get('exception.drivernotexists', false, 'BoA')));
         }
 
-        //ToDo: search resource.
-
-        $data = new stdClass();
-        $data->id = $id;
+        $data = $this->loadData($catalog_id, $id);
+        $data->about = Restos::URIRest('c/' . $catalog_id . '/resources/' . $id);
         $this->Data = $data;
 
+    }
+
+
+    private function loadData($catalog_id, $id){
+        $catalog = $this->_query_driver->getCatalogue($catalog_id);
+
+        if ($catalog == null){
+            Restos::throwException(null, RestosLang::get('searchengine.catalognotfound', 'boa', $catalog_id), 404);
+        }
+
+        $path = realpath($catalog->path);
+        if ($path === false || !file_exists($path)){
+            Restos::throwException(null, RestosLang::get('searchengine.catalogpathnotfound', 'boa', $catalog_id), 404);
+        }
+
+        $decodeid = base64_decode($id, true);
+
+        if ($decodeid === false) {
+            Restos::throwException(null, RestosLang::get('searchengine.badid', 'boa', $id), 404);
+        }
+
+        $manifest = "{}";
+        $metadataPath = "";
+
+        chdir($path);
+        $realpath = realpath($decodeid);
+
+        if ($realpath === false){
+            Restos::throwException(null, RestosLang::get('searchengine.badid', 'boa', $id), 404);
+        }
+
+        $path .= (substr($path, -1) === '/' ? '' : '/');
+        $realpath = str_replace($path, '', $realpath);
+
+        if (!file_exists($path . $realpath)){
+            Restos::throwException(null, RestosLang::get('notfound'), 404);
+        }
+
+        if (strpos($decodeid, '/') === false){
+            $manifestPath = $path . $realpath . "/.manifest";
+            $manifest = file_get_contents($manifestPath);
+            $metadataPath = $path . $realpath . "/.metadata";
+        }
+        else {
+            $basedir = dirname($realpath);
+            $filename = basename($realpath);
+            $metadataPath = $path . $basedir . "/." . $filename . ".metadata";
+        }
+
+        $metadata = "{}";
+        if (file_exists($metadataPath)) {
+            $metadata = file_get_contents($metadataPath);
+        }
+        $data = json_decode("{\"manifest\":$manifest,\"metadata\":$metadata}");
+        $data->id = $decodeid;
+        return $data;
     }
 
 }

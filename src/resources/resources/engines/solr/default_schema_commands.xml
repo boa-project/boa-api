@@ -3,6 +3,7 @@
   <add_field name="catalog_id" type="string" />
   <add_field name="execution_id" type="string" />
   <add_field name="updated_at" type="pdate" indexed="false" stored="true" multiValued="false" default="NOW" />
+  <add_field name="rawdoc" type="string" indexed="false" stored="true" multiValued="false" />
   <add_field name="manifest.author" type="text_general" />
   <add_field name="manifest.conexion_type" type="string" />
   <add_field name="manifest.status" type="string" />
@@ -10,6 +11,7 @@
   <add_field name="manifest.type" type="text_general" />
   <add_field name="manifest.url" type="text_general" />
   <add_field name="manifest.version" type="string" />
+  <add_field name="manifest.customicon" type="string" />
   <add_field name="metadata.general.title" type="text_general" />
   <add_field name="metadata.general.identifier.catalog" type="text_general" />
   <add_field name="metadata.general.identifier.entry" type="text_general" />
@@ -63,7 +65,8 @@
   <add_field name="metadata.annotation.description" type="text_general" />
   <add_field name="metadata.clasification.purpose" type="text_general" />
   <add_field name="metadata.clasification.description" type="text_general" />
-  <add_field name="metadata.clasification.taxon_path" type="text_general" />
+  <add_field name="metadata.clasification.taxon_path.source" type="text_general" />
+  <add_field name="metadata.clasification.taxon_path.id" type="text_general" />
   <!--Add copyFields to support multilanguage fields-->
   <add_copy_field source="manifest.author.*" dest="manifest.author" />
   <add_copy_field source="manifest.title.*" dest="manifest.title" />
@@ -81,7 +84,8 @@
   <add_copy_field source="metadata.rights.description.*" dest="metadata.rights.description" />
   <add_copy_field source="metadata.annotation.description.*" dest="metadata.annotation.description" />
   <add_copy_field source="metadata.clasification.description.*" dest="metadata.clasification.description" />
-  <add_copy_field source="metadata.clasification.taxon_path.*" dest="metadata.clasification.taxon_path" />
+  <add_copy_field source="metadata.clasification.taxon_path.source.*" dest="metadata.clasification.taxon_path.source" />
+  <add_copy_field source="metadata.clasification.taxon_path.id.*" dest="metadata.clasification.taxon_path.id" />
   <!--Full text index-->  
   <add_copy_field source="manifest.author" dest="_text_" />
   <add_copy_field source="manifest.author.*" dest="_text_" />
@@ -99,23 +103,24 @@
   <add_copy_field source="metadata.general.keywords.*" dest="_text_" />
   <add_copy_field source="metadata.general.coverage" dest="_text_" />
   <add_copy_field source="metadata.general.coverage.*" dest="_text_" />
-  <add_copy_field source="metadata.lifecycle.version" dest="_text_" />
-  <add_copy_field source="metadata.lifecycle.version.*" dest="_text_" />
+  <!--add_copy_field source="metadata.lifecycle.version" dest="_text_" />
+  <add_copy_field source="metadata.lifecycle.version.*" dest="_text_" /-->
   <add_copy_field source="metadata.lifecycle.contribution.entity.name" dest="_text_" />
   <add_copy_field source="metadata.lifecycle.contribution.entity.lastname" dest="_text_" />
   <add_copy_field source="metadata.lifecycle.contribution.entity.company" dest="_text_" />
   <add_copy_field source="metadata.lifecycle.contribution.entity.email" dest="_text_" />
   <add_copy_field source="metadata.technical.format" dest="_text_" />
   <add_copy_field source="metadata.technical.location" dest="_text_" />
-  <add_copy_field source="metadata.technical.requirements.minversion" dest="_text_" />
+  <!--add_copy_field source="metadata.technical.requirements.minversion" dest="_text_" />
   <add_copy_field source="metadata.technical.requirements.maxversion" dest="_text_" />
   <add_copy_field source="metadata.technical.installation_remarks" dest="_text_" />
   <add_copy_field source="metadata.technical.installation_remarks.*" dest="_text_" />
   <add_copy_field source="metadata.technical.other_platform_requirements" dest="_text_" />
   <add_copy_field source="metadata.technical.other_platform_requirements.*" dest="_text_" />
+  <add_copy_field source="metadata.technical.alternate_media" dest="_text_" />
   <add_copy_field source="metadata.technical.alternate_media.*" dest="_text_" />
   <add_copy_field source="metadata.educational.typical_age_range" dest="_text_" />
-  <add_copy_field source="metadata.educational.typical_age_range.*" dest="_text_" />
+  <add_copy_field source="metadata.educational.typical_age_range.*" dest="_text_" /-->
   <add_copy_field source="metadata.educational.description" dest="_text_" />
   <add_copy_field source="metadata.educational.description.*" dest="_text_" />
   <add_copy_field source="metadata.rights.description" dest="_text_" />
@@ -128,6 +133,8 @@
   <add_copy_field source="metadata.annotation.description.*" dest="_text_" />
   <add_copy_field source="metadata.clasification.description" dest="_text_" />
   <add_copy_field source="metadata.clasification.description.*" dest="_text_" />
-  <add_copy_field source="metadata.clasification.taxon_path" dest="_text_" />
-  <add_copy_field source="metadata.clasification.taxon_path.*" dest="_text_" />
+  <!--add_copy_field source="metadata.clasification.taxon_path.source" dest="_text_" />
+  <add_copy_field source="metadata.clasification.taxon_path.source.*" dest="_text_" /-->
+  <add_copy_field source="metadata.clasification.taxon_path.id" dest="_text_" />
+  <add_copy_field source="metadata.clasification.taxon_path.id.*" dest="_text_" />
 </schema_commands>

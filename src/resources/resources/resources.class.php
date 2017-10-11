@@ -77,11 +77,11 @@ class Resources extends ComplexObjectList {
 
     }
 
-    public function execute($query = null, $number = null, $start_on = null, $filters = null) {
-        $list = $this->_engineobject->queryExecute($query, $number, $start_on, $filters);
+    public function execute($query = null, $number = null, $start_on = null, $filters = null, $mode = null) {
+        $list = $this->_engineobject->queryExecute($query, $number, $start_on, $filters, $mode);
 
         foreach($list as $one) {
-            $one->about = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . $one->id);
+            $one->about = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . base64_encode($one->id));
         }
 
         return $list;

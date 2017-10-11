@@ -4,7 +4,6 @@
 
 1 SYSTEM REQUIREMENTS
 
-&nbsp;&nbsp;&nbsp;&nbsp;Java runtime environment (JRE) 1.8 or greater  
 &nbsp;&nbsp;&nbsp;&nbsp;MySql 5.5 o superior  
 &nbsp;&nbsp;&nbsp;&nbsp;PHP 7 or superior  
 &nbsp;&nbsp;&nbsp;&nbsp;Additionally for php following components are required:  
@@ -13,7 +12,9 @@
 &nbsp;&nbsp;&nbsp;&nbsp;PHP5-CURL  
 
 
-2 INSTALLING SOLR (Index and Search Engine)
+2 INSTALLING SOLR SEARCH Engine (Only if you are going to use Solr Search Engine)
+
+Requires Java runtime environment (JRE) 1.8 or greater  
 
 For a full description of installation instructions visit 
     [https://lucene.apache.org/solr/guide/6_6/taking-solr-to-production.html]()
@@ -65,16 +66,15 @@ c. Running solr installation script
 
 3 CREATING SOLR CORE FOR BoA AND START SERVICE
 
-  Make sure solr service is running then execute create command from a terminal
-
+* Unzip solr\_boa\_core.zip package to the solr data directory (normally /var/solr). You can find solr_boa_core.zip in the tools folder of the boa-api project source, see step 4 on how to download boa-api project source code. After unzipped you should have a path like /var/solr/boa.
+* Once package is unzipped, modify boa/core.properties to assign key dataDir with the path where solr should store indexed data for boa.
+* Restart/start solr service
 ```
-  service solr start //Start the solr service
-  cd var /opt/solr
-  bin/solr create -c udea //udea is the name for the new core
+  service solr [restart|start]
 ```
+* Navigate to [http://[yourserver]:8983/solr]() and you should see the solr console and boa under the Core Selector.
 
-Navigate to [http://localhost:8983/solr]() and you should see the solr console.
-
+	
 4 INSTALLING BOA API WEB SERVICE
 
 a. Download or clone boa-api project source to a folder on the installation server 
@@ -88,7 +88,7 @@ b. Locate [installation-folder]/src/properties.json.sample file and copy it to [
 c. Edit [installation-folder]/src/properties.json to provide database access configuration and others:
 
 <strong>URI\_BASE</strong>: Set this to the base url where the boa-api is installed. e.g http://localhost/boaapi  
-<strong>URI\_BOA\_ADMIN\_API</strong>: Set this to the url where the boa admin project is installed plus "/api". This url will be consumed locally only so you can use localhost. e.g http://localhost/boa2/api  
+<strong>URI\_BOA\_ADMIN\_API</strong>: If you are using Solr Search Engine, set this to the url where the boa admin project is installed plus "/api". This url will be consumed locally only so you can use localhost. e.g http://localhost/boa2/api  
 <strong>URI\_SOLR\_SERVICE</strong>: Set this to the url where the solr service is installed. This url will be consumed locally only so you can use localhost. e.g http://localhost:8983/solr/[core]. Core should be set to the core name you create it in step 3. e.g udea 
 <strong>DEFAULT\_DATABASE\_CONNECTION\_STRING</strong>:  
 <strong>AUTH\_DATABASE\_CONNECTION\_STRING</strong>:  

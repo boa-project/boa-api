@@ -82,7 +82,7 @@ class Driver_BoA {
         if ($ch->errno){
             throw new Exception($ch->error, 1);
         }
-        if (isset($ch->info) && isset($ch->info["http_code"]) && $ch->info["http_code"] > 201){ //There is an http status error code
+        if (isset($ch->info) && isset($ch->info["http_code"]) && $ch->info["http_code"] >= 400){ //There is an http status error code
             throw new Exception($response, 1);
         }
 

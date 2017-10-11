@@ -11,7 +11,8 @@
                         "Parameters" : {
                             "URI" : "<URI_SOLR_SERVICE>",
                             "CHUNK_SIZE": 100,
-                            "Rebuild": "None"
+                            "Rebuild": "None",
+                            "BasicFields": "id,catalog_id,manifest.title,manifest.description,manifest.url,manifest.customicon,metadata.general.title,metadata.general.description"
                         },
                         "Enabled" : true,
                         "Description" : "Use a Solr system to indexation and search resources"

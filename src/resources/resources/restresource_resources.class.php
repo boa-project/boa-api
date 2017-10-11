@@ -46,9 +46,10 @@ class RestResource_Resources extends RestResource {
         }
 
         if ($resources->isSpecificResources()){
+            $params = $this->_restGeneric->RestReceive->getParameters();
 
             try {
-                $resource = new Resource($resources->getResourceId());
+                $resource = new Resource($resources->Resources->c, $resources->getResourceId());
                 $data = $resource->getPrototype();
             }
             catch (ObjectNotFoundException $e) {
@@ -66,6 +67,7 @@ class RestResource_Resources extends RestResource {
 
                 $number     = (isset($params['(n)']) && is_numeric($params['(n)'])) ? $params['(n)'] : null;
                 $start_on   = (isset($params['(s)']) && is_numeric($params['(s)'])) ? $params['(s)'] : null;
+                $mode       = (isset($params['(mode)']) && preg_match("/^(full|basic)$/i", ($params['(mode)'])) ? $params['(mode)'] : 'basic'); //Mode, default to basic
 
                 $filters = new stdClass();
                 $filters->specification = isset($params['(spec)']) ? $params['(spec)'] : null;
@@ -78,7 +80,7 @@ class RestResource_Resources extends RestResource {
                 $engine = isset($params['(engine)']) ? $params['(engine)'] : null;
 
                 $resources_list = new Resources($engine);
-                $data = $resources_list->execute($query, $number, $start_on, $filters);
+                $data = $resources_list->execute($query, $number, $start_on, $filters, $mode);
 
                 $executed_queries = Restos::getSession('resource', 'queries', 'executed', array());
                 // Only save the first 1000 queries in a session.

@@ -29,10 +29,11 @@ Restos::using('resources.resources.engines.solr.solr_querybuilder');
  */
 class SearchEngine_solr extends SearchEngine {
 
-    public function queryExecute ($query = null, $number = null, $start_on = null, $groups = null) {
+    public function queryExecute ($query = null, $number = null, $start_on = null, $groups = null, $mode = null) {
         $queryBuilder = new Solr_querybuilder($this->_parameters);
         $queryBuilder->setFilters($groups);
         $queryBuilder->setPagination($start_on, $number);
+        $queryBuilder->setMode($mode); //full|basic
         return $queryBuilder->buildAndExecute($query);
     }
 

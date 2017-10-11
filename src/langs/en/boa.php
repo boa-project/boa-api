@@ -38,4 +38,6 @@ $s['searchengine.solr.notcatalogues'] = 'Not catalogues';
 $s['searchengine.solr.searchcatalogues'] = 'Search catalogues to index';
 $s['searchengine.solr.indexcatalogues'] = 'Indexing {$a} catalogues';
 $s['searchengine.catalognotfound'] = 'Catalog {$a} not found';
+$s['searchengine.catalogpathnotfound'] = 'Path for catalog {$a} not found';
 $s['searchengine.badid'] = 'Bad formed id ({$a})';
+

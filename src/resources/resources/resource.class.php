@@ -52,6 +52,11 @@ class Resource extends ComplexObject {
             Restos::throwException(null, RestosLang::get('searchengine.catalognotfound', 'boa', $catalog_id), 404);
         }
 
+        $path = realpath($catalog->path);
+        if ($path === false || !file_exists($path)){
+            Restos::throwException(null, RestosLang::get('searchengine.catalogpathnotfound', 'boa', $catalog_id), 404);
+        }
+
         $decodeid = base64_decode($id, true);
 
         if ($decodeid === false) {
@@ -59,22 +64,31 @@ class Resource extends ComplexObject {
         }
 
         $manifest = "{}";
-        $path = $catalog->path;
         $metadataPath = "";
 
-        if (!file_exists($path . "/" . $decodeid)){
+        chdir($path);
+        $realpath = realpath($decodeid);
+
+        if ($realpath === false){
+            Restos::throwException(null, RestosLang::get('searchengine.badid', 'boa', $id), 404);
+        }
+
+        $path .= (substr($path, -1) === '/' ? '' : '/');
+        $realpath = str_replace($path, '', $realpath);
+
+        if (!file_exists($path . $realpath)){
             Restos::throwException(null, RestosLang::get('notfound'), 404);
         }
 
         if (strpos($decodeid, '/') === false){
-            $manifestPath = $path . "/" . $decodeid . "/.manifest";
+            $manifestPath = $path . $realpath . "/.manifest";
             $manifest = file_get_contents($manifestPath);
-            $metadataPath = $path . "/" . $decodeid . "/.metadata";
+            $metadataPath = $path . $realpath . "/.metadata";
         }
         else {
-            $basedir = dirname($decodeid);
-            $filename = basename($decodeid);
-            $metadataPath = $path . "/" . $basedir . "/." . $filename . ".metadata";
+            $basedir = dirname($realpath);
+            $filename = basename($realpath);
+            $metadataPath = $path . $basedir . "/." . $filename . ".metadata";
         }
 
         $metadata = "{}";

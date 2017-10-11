@@ -25,7 +25,6 @@
  * @license    https://www.gnu.org/licenses/agpl-3.0.html GNU Affero GPL v3 or later
  */
 
-Restos::using('classes.curl');
 Restos::using('resources.resources.engines.solr.solr_client');
 
 if (!function_exists('glob_recursive')){

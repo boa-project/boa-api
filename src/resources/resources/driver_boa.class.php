@@ -68,16 +68,24 @@ class Driver_BoA {
      */
     private function getApiBoACall($path) {
         $service_url = $this->_properties->BoAAPI;
+        Restos::using('classes.curl');
 
-        $curl = curl_init(rtrim($service_url, '/') . "/" . $path);
+        $ch = new Curl();
+        $ch->setHeader(['Content-Type: application/json']);
 
-        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         $user = md5(gethostname());
         $pwd = "";
-        curl_setopt($curl, CURLOPT_USERPWD, "$user:$pwd");
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        $curl_response = curl_exec($curl);
-        curl_close($curl);
-        return json_decode($curl_response);
+        $ch->setopt(array("HTTPAUTH" => CURLAUTH_BASIC, "USERPWD" => "$user:$pwd"));
+
+        $url = rtrim($service_url, '/') . "/" . $path;
+        $response = $ch->get($url);
+        if ($ch->errno){
+            throw new Exception($ch->error, 1);
+        }
+        if (isset($ch->info) && isset($ch->info["http_code"]) && $ch->info["http_code"] > 201){ //There is an http status error code
+            throw new Exception($response, 1);
+        }
+
+        return json_decode($response);
     }
 }

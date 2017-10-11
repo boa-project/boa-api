@@ -25,6 +25,8 @@
  * @license    https://www.gnu.org/licenses/agpl-3.0.html GNU Affero GPL v3 or later
  */
 
+Restos::using('classes.curl');
+
 class Solr_client {
     const ERRCODE_UNABLE_TO_PARSE_RESPONSE = 1000;
     const ERRCODE_API_RESPONSE_ERROR = 1001;

@@ -21,6 +21,7 @@ Restos::using('resources.logs.log');
 Restos::using('resources.resources.resource');
 Restos::using('resources.resources.resources');
 Restos::using('resources.queries.query');
+Restos::using('resources.resources.restmapping_resources');
 
 /**
  * Class to manage the resources
@@ -51,6 +52,13 @@ class RestResource_Resources extends RestResource {
             try {
                 $resource = new Resource($resources->Resources->c, $resources->getResourceId());
                 $data = $resource->getPrototype();
+
+                if ($this->_restGeneric->RestResponse->Type == 'IMG') {
+                    $mapping = new RestMapping_Resources($data);
+
+                    $this->_restGeneric->RestResponse->Content = $mapping->getMapping($this->_restGeneric->RestResponse->Type, $resource);
+                    return true;
+                }
             }
             catch (ObjectNotFoundException $e) {
                 Restos::throwException(null, RestosLang::get('notfound'), 404);
@@ -101,7 +109,6 @@ class RestResource_Resources extends RestResource {
             }
         }
 
-        Restos::using('resources.resources.restmapping_resources');
         $mapping = new RestMapping_Resources($data);
 
         $this->_restGeneric->RestResponse->Content = $mapping->getMapping($this->_restGeneric->RestResponse->Type);

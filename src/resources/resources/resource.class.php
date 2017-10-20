@@ -28,6 +28,14 @@ class Resource extends ComplexObject {
 
     private $_query_driver;
 
+    private $_catalog = null;
+
+    private $_path = null;
+
+    private $_realpath = null;
+
+    private $_manifest = null;
+
     public function __construct($catalog_id, $id) {
 
         $data = Restos::$DefaultRestGeneric->getDriverData("resources");
@@ -66,6 +74,7 @@ class Resource extends ComplexObject {
         $manifest = "{}";
         $metadataPath = "";
 
+        $current_path = getcwd();
         chdir($path);
         $realpath = realpath($decodeid);
 
@@ -80,10 +89,22 @@ class Resource extends ComplexObject {
             Restos::throwException(null, RestosLang::get('notfound'), 404);
         }
 
+        $this->_catalog = $catalog;
+        $this->_realpath = $realpath;
+        $this->_path = $path;
+
         if (strpos($decodeid, '/') === false){
             $manifestPath = $path . $realpath . "/.manifest";
             $manifest = file_get_contents($manifestPath);
             $metadataPath = $path . $realpath . "/.metadata";
+
+            $manifest_object = json_decode($manifest);
+            $customiconname = property_exists($manifest_object, 'customicon') ? $manifest_object->customicon : '';
+
+            $manifest_object->customicon = Restos::URIRest('c/' . $catalog_id . '/resources/' . $id . '.img');
+            $manifest = json_encode($manifest_object);
+            $manifest_object->customiconname = $customiconname;
+            $this->_manifest = $manifest_object;
         }
         else {
             $basedir = dirname($realpath);
@@ -95,9 +116,22 @@ class Resource extends ComplexObject {
         if (file_exists($metadataPath)) {
             $metadata = file_get_contents($metadataPath);
         }
+
         $data = json_decode("{\"manifest\":$manifest,\"metadata\":$metadata}");
         $data->id = $decodeid;
+
+        chdir($current_path);
+
         return $data;
+    }
+
+    public function getCustomIconPath() {
+
+        if (!($this->_manifest) || !property_exists($this->_manifest, 'customiconname') || empty($this->_manifest->customiconname)){
+            return null;
+        }
+
+        return $this->_path . $this->_realpath . '/src/' . $this->_manifest->customiconname;
     }
 
 }

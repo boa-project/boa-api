@@ -35,4 +35,48 @@ class RestMapping_Resources extends RestMapping {
         parent::__construct($data, "resource", "resources");
     }
 
+    public function getMapping($type, $resource = null) {
+
+        if ($type == 'IMG' && $resource) {
+            $path = $resource->getCustomIconPath();
+
+            if ($path && file_exists($path)) {
+                $parts = explode('.', $path);
+                $ext = strtolower($parts[count($parts) - 1]);
+                Restos::$DefaultRestGeneric->RestResponse->Type = $ext;
+
+                return file_get_contents($path);
+            }
+            else {
+                Restos::$DefaultRestGeneric->RestResponse->Type = 'PNG';
+                return file_get_contents('resources/resources/assets/icon.png');
+            }
+        }
+        else {
+            return parent::getMapping($type);
+        }
+
+//         $parts = explode('.', $this->_data->file);
+//
+//         $ext = strtolower($parts[count($parts) - 1]);
+//         if ($ext != strtolower($type)) {
+//             if ($type == 'XML' || $type == 'JSON') {
+//                 $res = array('type'=>$ext, 'expire_time'=>$this->_data->expire_time, 'content-type'=>RestosMimeTypes::getMimeType($ext));
+//                 return $res;
+//             }
+//             return null;
+//         }
+//
+//         $path_file = $this->_data->path . $this->_data->file;
+//
+//         $res = '';
+//         if (file_exists($path_file)) {
+//             $res = file_get_contents($path_file);
+//         }
+//
+//         return $res;
+
+    }
+
+
 }

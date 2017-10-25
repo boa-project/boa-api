@@ -99,11 +99,19 @@ class Resource extends ComplexObject {
             $metadataPath = $path . $realpath . "/.metadata";
 
             $manifest_object = json_decode($manifest);
-            $customiconname = property_exists($manifest_object, 'customicon') ? $manifest_object->customicon : '';
 
-            $manifest_object->customicon = Restos::URIRest('c/' . $catalog_id . '/resources/' . $id . '.img');
+            $customiconname = null;
+            if (property_exists($manifest_object, 'customicon')) {
+                $customiconname =  $manifest_object->customicon;
+                $manifest_object->customicon = Restos::URIRest('c/' . $catalog_id . '/resources/' . $id . '.img');
+            }
+
             $manifest = json_encode($manifest_object);
-            $manifest_object->customiconname = $customiconname;
+
+            if ($customiconname) {
+                $manifest_object->customiconname = $customiconname;
+            }
+
             $this->_manifest = $manifest_object;
         }
         else {
@@ -134,4 +142,30 @@ class Resource extends ComplexObject {
         return $this->_path . $this->_realpath . '/src/' . $this->_manifest->customiconname;
     }
 
+    public function getContent($path) {
+
+        $res = new stdClass();
+        $res->body = '';
+        $res->type = null;
+
+        if ($path) {
+            if (strpos($path, '.') !== false) {
+                $parts = explode('.', $path);
+                $ext = strtolower(array_pop($parts));
+                $res->type = $ext;
+            }
+
+            $basepath = $this->_path . $this->_realpath . '/content/';
+            $path = realpath($basepath . $path);
+
+            $pos_basepath = strpos($path, $basepath);
+            if ($pos_basepath !== false &&  $pos_basepath === 0 && file_exists($path)) {
+                $res->body = file_get_contents($path);
+                return $res;
+            }
+        }
+
+        Restos::throwException(null, RestosLang::get('notfound'), 404);
+
+    }
 }

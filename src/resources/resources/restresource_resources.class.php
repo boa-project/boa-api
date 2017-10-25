@@ -47,21 +47,34 @@ class RestResource_Resources extends RestResource {
         }
 
         if ($resources->isSpecificResources()){
-            $params = $this->_restGeneric->RestReceive->getParameters();
 
             try {
                 $resource = new Resource($resources->Resources->c, $resources->getResourceId());
                 $data = $resource->getPrototype();
 
+
                 if ($this->_restGeneric->RestResponse->Type == 'IMG') {
                     $mapping = new RestMapping_Resources($data);
-
                     $this->_restGeneric->RestResponse->Content = $mapping->getMapping($this->_restGeneric->RestResponse->Type, $resource);
                     return true;
                 }
+
             }
             catch (ObjectNotFoundException $e) {
                 Restos::throwException(null, RestosLang::get('notfound'), 404);
+            }
+
+            $content_path = $this->_restGeneric->RestReceive->getURIParameters();
+
+            if ($content_path) {
+                $content = $resource->getContent($content_path);
+                $this->_restGeneric->RestResponse->Content = $content->body;
+
+                if ($content->type) {
+                    $this->_restGeneric->RestResponse->Type = $content->type;
+                }
+
+                return true;
             }
         }
         else {

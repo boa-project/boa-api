@@ -113,11 +113,17 @@ class Resource extends ComplexObject {
             }
 
             $this->_manifest = $manifest_object;
+            $this->_manifest->entrypoint = "index.html";
         }
         else {
             $basedir = dirname($realpath);
             $filename = basename($realpath);
             $metadataPath = $path . $basedir . "/." . $filename . ".metadata";
+
+            $this->_manifest = new stdClass();
+            $this->_manifest->type = "file";
+            $this->_manifest->entrypoint = $filename;
+            $manifest = json_encode($this->_manifest);
         }
 
         $metadata = "{}";
@@ -148,20 +154,46 @@ class Resource extends ComplexObject {
         $res->body = '';
         $res->type = null;
 
-        if ($path) {
+        if (isset($path)) {
             if (strpos($path, '.') !== false) {
                 $parts = explode('.', $path);
                 $ext = strtolower(array_pop($parts));
                 $res->type = $ext;
             }
 
-            $basepath = $this->_path . $this->_realpath . '/content/';
-            $path = realpath($basepath . $path);
+            if ($this->_manifest->type == 'file') {
+                $basepath = $path = $this->_path . $this->_realpath;
+                $parts = explode('.', $path);
+                $ext = strtolower(array_pop($parts));
+                $res->type = $ext;
+            }
+            else {
+                $basepath = $this->_path . $this->_realpath . '/content';
+                $path = realpath($basepath . '/' . $path);
+            }
 
             $pos_basepath = strpos($path, $basepath);
-            if ($pos_basepath !== false &&  $pos_basepath === 0 && file_exists($path)) {
-                $res->body = file_get_contents($path);
-                return $res;
+            if ($pos_basepath !== false &&  $pos_basepath === 0) {
+                if (is_dir($path)) {
+                    // To guarantee that the last one char is '/'.
+                    $path = rtrim($path, '/') . '/';
+                    if (!empty($this->_manifest->entrypoint)) {
+                        $path .= $this->_manifest->entrypoint;
+
+                        $parts = explode('.', $path);
+                        $ext = strtolower(array_pop($parts));
+                        $res->type = $ext;
+                    }
+                    else {
+                        $path .= 'index.html';
+                        $res->type = 'html';
+                    }
+                }
+
+                if (file_exists($path)) {
+                    $res->body = file_get_contents($path);
+                    return $res;
+                }
             }
         }
 

@@ -83,7 +83,12 @@ class Resources extends ComplexObjectList {
         foreach($list as $one) {
             $one->about = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . base64_encode($one->id));
 
-            if (property_exists($one, 'manifest') && property_exists($one->manifest, 'customicon')) {
+            if (!property_exists($one, 'manifest')){
+                $one->manifest = new stdClass();
+                $one->manifest->type = "file";
+            }
+
+            if (property_exists($one->manifest, 'customicon')) {
                 // The customicon name is replaced by the specific object image uri. Only if customicon exists.
                 $one->manifest->customicon = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . base64_encode($one->id) . '.img');
             }

@@ -48,33 +48,25 @@ class RestMapping_Resources extends RestMapping {
                 return file_get_contents($path);
             }
             else {
+                $parts = explode('.', $resource->id);
+                $ext = strtolower(array_pop($parts));
+
+                $params = Restos::$DefaultRestGeneric->RestReceive->getParameters();
+                $ext .= isset($params['s']) && is_numeric($params['s']) ? '-' . $params['s'] : '';
+
+                $iconfile = 'resources/resources/assets/f/' . $ext . '.png';
+
+                if (!file_exists($iconfile)) {
+                    $iconfile = 'resources/resources/assets/icon.png';
+                }
+
                 Restos::$DefaultRestGeneric->RestResponse->Type = 'PNG';
-                return file_get_contents('resources/resources/assets/icon.png');
+                return file_get_contents($iconfile);
             }
         }
         else {
             return parent::getMapping($type);
         }
-
-//         $parts = explode('.', $this->_data->file);
-//
-//         $ext = strtolower($parts[count($parts) - 1]);
-//         if ($ext != strtolower($type)) {
-//             if ($type == 'XML' || $type == 'JSON') {
-//                 $res = array('type'=>$ext, 'expire_time'=>$this->_data->expire_time, 'content-type'=>RestosMimeTypes::getMimeType($ext));
-//                 return $res;
-//             }
-//             return null;
-//         }
-//
-//         $path_file = $this->_data->path . $this->_data->file;
-//
-//         $res = '';
-//         if (file_exists($path_file)) {
-//             $res = file_get_contents($path_file);
-//         }
-//
-//         return $res;
 
     }
 

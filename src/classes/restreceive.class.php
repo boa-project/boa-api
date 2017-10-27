@@ -56,11 +56,9 @@ class RestReceive extends Entity {
 
         if($resources_slice) {
             $init_slice = strpos($this->_uri, $resources_slice);
-            $this->_uri_params = substr($this->_uri, $init_slice + strlen($resources_slice));
-            $this->_uri = substr($this->_uri, 0, $init_slice);
-
-            if (empty($this->_uri_params)) {
-                $this->_uri_params = null;
+            if ($init_slice !== false) {
+                $this->_uri_params = substr($this->_uri, $init_slice + strlen($resources_slice));
+                $this->_uri = substr($this->_uri, 0, $init_slice);
             }
         }
 

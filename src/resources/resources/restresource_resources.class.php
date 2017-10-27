@@ -66,7 +66,7 @@ class RestResource_Resources extends RestResource {
 
             $content_path = $this->_restGeneric->RestReceive->getURIParameters();
 
-            if ($content_path) {
+            if (isset($content_path)) {
                 $content = $resource->getContent($content_path);
                 $this->_restGeneric->RestResponse->Content = $content->body;
 

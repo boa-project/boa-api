@@ -30,6 +30,8 @@ Restos::using('classes.curl');
 class Solr_client {
     const ERRCODE_UNABLE_TO_PARSE_RESPONSE = 1000;
     const ERRCODE_API_RESPONSE_ERROR = 1001;
+    const ERRCODE_PARSE_RESPONSE_ERROR = 1002;
+
     /**
      *
      * Solr service URI
@@ -275,6 +277,15 @@ class Solr_client {
     public function errorMessage(){
         return $this->_error;
     }
+
+    /**
+     *
+     * Returns the error number of the last request if any
+     */
+    public function errorNumber(){
+        return $this->_errno ? $this->_errno : 500;
+    }
+
     /**
      * 
      * Issue a Solr get documents request
@@ -405,16 +416,37 @@ class Solr_client {
             $this->_error = implode('\n', $all);
             return false;
         }
-        
+
         if (property_exists($result, 'error')) {
-            $this->_errno = Solr_client::ERRCODE_API_RESPONSE_ERROR;
-            $this->_error = $result->error->msg;
+
+            if (property_exists($result->error, 'metadata') && in_array('org.apache.solr.parser.ParseException', $result->error->metadata)) {
+                $this->_errno = Solr_client::ERRCODE_PARSE_RESPONSE_ERROR;
+                $this->_error = RestosLang::get('searchengine.solr.parsererror', 'boa');
+            }
+            else {
+                $this->_errno = Solr_client::ERRCODE_API_RESPONSE_ERROR;
+                $this->_error = $result->error->msg;
+            }
+
             return false;
         }
 
         $this->_result = $result;
         return true;
     }
+
+    /**
+     *
+     * Returns the number of records found
+     */
+    public function numFound(){
+        if ($this->_result && property_exists($this->_result, 'response')) {
+            return $this->_result->response->numFound;
+        }
+
+        return null;
+    }
+
 }
 
 

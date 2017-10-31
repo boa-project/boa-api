@@ -75,13 +75,14 @@ class Solr_querybuilder {
      */
     public function setFilters($filters){
         if (!$filters) return;
+
         $this->_query["fq"] = array();
         if ($filters->specification){
             $this->_query["fq"][] = "manifest.type:".$filters->specification;
         }
 
-        if ($filters->extensions && count($filter->extensions) > 0){
-            $this->_query["fq"][] = "file.extension:(" . implode(' OR ', $filter->extensions) . ")";
+        if ($filters->extensions && count($filters->extensions) > 0){
+            $this->_query["fq"][] = "file.extension:(" . implode(' OR ', $filters->extensions) . ")";
         }
         if ($filters->user){
             $this->_query["fq"][] = "manifest.author:" . $filters->user;
@@ -125,7 +126,7 @@ class Solr_querybuilder {
      * @param 
      */
     public function buildAndExecute($query){
-        $this->_query['q'] = $query;        
+        $this->_query['q'] = $query;
         $fields = $this->_query['fl'];
         unset($this->_query['fl']); //Do not set the fields options on the api query
         $queryString = $this->getQueryString();
@@ -134,7 +135,7 @@ class Solr_querybuilder {
         $docs = $client->getDocumentsByQuery($queryString, false); //Do not transform response
 
         if ($docs === false){
-            throw new Exception($client->errorMessage());
+            Restos::throwException(null, $client->errorMessage(), $client->errorNumber());
         }
         return $docs;
     }

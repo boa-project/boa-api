@@ -93,7 +93,17 @@ class RestResource_Resources extends RestResource {
                 $filters = new stdClass();
                 $filters->specification = isset($params['(spec)']) ? $params['(spec)'] : null;
                 $filters->metas         = isset($params['(meta)']) ? $params['(meta)'] : null;
-                $filters->extensions    = isset($params['(ext)']) ? $params['(ext)'] : null;
+
+                if (isset($params['(ext)'])) {
+                    $extensions = explode(',', $params['(ext)']);
+                    foreach($extensions as $ext) {
+                        $filters->extensions[] = trim($ext);
+                    }
+                }
+                else {
+                    $filters->extensions = null;
+                }
+
                 $filters->user          = isset($params['(user)']) ? $params['(user)'] : null;
                 $filters->connection    = isset($params['(conn)']) ? $params['(conn)'] : null;
                 $filters->catalog       = $resources->Resources->c;

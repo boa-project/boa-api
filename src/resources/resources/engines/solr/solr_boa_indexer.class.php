@@ -229,7 +229,6 @@ class Solr_boa_indexer {
         unset($json->manifest->status);
         unset($json->manifest->lastupdated);
         unset($json->manifest->lastpublished);
-        unset($json->manifest->customicon);
     }
 
     private function fileHasChanged($path, $last_update){

@@ -21,6 +21,7 @@ Restos::using('resources.logs.log');
 Restos::using('resources.resources.resource');
 Restos::using('resources.resources.resources');
 Restos::using('resources.queries.query');
+Restos::using('resources.resources.restmapping_resources');
 
 /**
  * Class to manage the resources
@@ -46,14 +47,34 @@ class RestResource_Resources extends RestResource {
         }
 
         if ($resources->isSpecificResources()){
-            $params = $this->_restGeneric->RestReceive->getParameters();
 
             try {
                 $resource = new Resource($resources->Resources->c, $resources->getResourceId());
                 $data = $resource->getPrototype();
+
+
+                if ($this->_restGeneric->RestResponse->Type == 'IMG') {
+                    $mapping = new RestMapping_Resources($data);
+                    $this->_restGeneric->RestResponse->Content = $mapping->getMapping($this->_restGeneric->RestResponse->Type, $resource);
+                    return true;
+                }
+
             }
             catch (ObjectNotFoundException $e) {
                 Restos::throwException(null, RestosLang::get('notfound'), 404);
+            }
+
+            $content_path = $this->_restGeneric->RestReceive->getURIParameters();
+
+            if (isset($content_path)) {
+                $content = $resource->getContent($content_path);
+                $this->_restGeneric->RestResponse->Content = $content->body;
+
+                if ($content->type) {
+                    $this->_restGeneric->RestResponse->Type = $content->type;
+                }
+
+                return true;
             }
         }
         else {
@@ -72,7 +93,17 @@ class RestResource_Resources extends RestResource {
                 $filters = new stdClass();
                 $filters->specification = isset($params['(spec)']) ? $params['(spec)'] : null;
                 $filters->metas         = isset($params['(meta)']) ? $params['(meta)'] : null;
-                $filters->extensions    = isset($params['(ext)']) ? $params['(ext)'] : null;
+
+                if (isset($params['(ext)'])) {
+                    $extensions = explode(',', $params['(ext)']);
+                    foreach($extensions as $ext) {
+                        $filters->extensions[] = trim($ext);
+                    }
+                }
+                else {
+                    $filters->extensions = null;
+                }
+
                 $filters->user          = isset($params['(user)']) ? $params['(user)'] : null;
                 $filters->connection    = isset($params['(conn)']) ? $params['(conn)'] : null;
                 $filters->catalog       = $resources->Resources->c;
@@ -101,7 +132,6 @@ class RestResource_Resources extends RestResource {
             }
         }
 
-        Restos::using('resources.resources.restmapping_resources');
         $mapping = new RestMapping_Resources($data);
 
         $this->_restGeneric->RestResponse->Content = $mapping->getMapping($this->_restGeneric->RestResponse->Type);

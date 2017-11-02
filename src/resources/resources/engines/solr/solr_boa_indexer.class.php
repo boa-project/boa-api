@@ -97,7 +97,7 @@ class Solr_boa_indexer {
         $path = $catalog->path;
         $this->_catalog_id = $catalog->alias;
 
-        $entries = glob($path."/*/{.}manifest", GLOB_NOSORT|GLOB_BRACE);
+        $entries = glob($path."/*/{.}manifest.published", GLOB_NOSORT|GLOB_BRACE);
 
         $this->_execution_id = uniqid();
         $docUpdates = array("p" => array(), "f" => array());
@@ -174,23 +174,19 @@ class Solr_boa_indexer {
         $last_update = $solr_info ? $solr_info["last_update"] : null;
         //DateTime::createFromFormat("y-m-d H:i:s", "70-01-01 00:00:00", new DateTimeZone("UTC"));
         $id = $dirname;
-        $isPublished = file_exists($manifestPath.".published");
-        if ($isPublished) {
-            $manifestPath .= ".published";
-            $hasChanged = $this->fileHasChanged($manifestPath, $last_update);
-            $content = file_get_contents($manifestPath);
-            $json = json_decode($content);
-            $id = isset($json->manifest) && isset($json->manifest->id) ? $json->manifest->id : $dirname;
-            
-            if ($hasChanged){
-                $this->clearForIndexation($json);
-                $doc = json_encode($json);
-                $docUpdates["f"][] = json_encode(array("id" => $id, "catalog_id" => $this->_catalog_id,
-                    "execution_id" => $run_id, "manifest" => $json->manifest, "metadata" => $json->metadata, "rawdoc" => $doc));
-            }
-            else {
-                $docUpdates["p"][] = "{\"id\":\"$id\",\"execution_id\":{\"set\":\"$run_id\"}}";
-            }
+        $hasChanged = $this->fileHasChanged($manifestPath, $last_update);
+        $content = file_get_contents($manifestPath);
+        $json = json_decode($content);
+        $id = isset($json->manifest) && isset($json->manifest->id) ? $json->manifest->id : $dirname;
+        
+        if ($hasChanged){
+            $this->clearForIndexation($json);
+            $doc = json_encode($json);
+            $docUpdates["f"][] = json_encode(array("id" => $id, "catalog_id" => $this->_catalog_id,
+                "execution_id" => $run_id, "manifest" => $json->manifest, "metadata" => $json->metadata, "rawdoc" => $doc));
+        }
+        else {
+            $docUpdates["p"][] = "{\"id\":\"$id\",\"execution_id\":{\"set\":\"$run_id\"}}";
         }
         $this->visitObjectContent($id, $dir, $docUpdates);
     }

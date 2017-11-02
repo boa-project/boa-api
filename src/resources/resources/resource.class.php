@@ -93,7 +93,7 @@ class Resource extends ComplexObject {
         $this->_path = $path;
 
         if (strpos($decodeid, '/') === false){
-            $manifestPath = $path . $realpath . "/.manifest";
+            $manifestPath = $path . $realpath . "/.manifest.published";
             $manifestText = file_get_contents($manifestPath);
             $json = json_decode($manifestText);
             $manifest_object = $json->manifest;
@@ -114,7 +114,7 @@ class Resource extends ComplexObject {
         else {
             $basedir = dirname($realpath);
             $filename = basename($realpath);
-            $manifestPath = $path . $basedir . "/." . $filename . ".manifest";
+            $manifestPath = $path . $basedir . "/." . $filename . ".manifest.published";
             $manifestText = file_get_contents($manifestPath);
             $json = json_decode($manifestText);
 

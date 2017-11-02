@@ -109,7 +109,6 @@ class Resource extends ComplexObject {
             }
 
             $this->_manifest = $manifest_object;
-            $this->_manifest->entrypoint = "index.html";
         }
         else {
             $basedir = dirname($realpath);

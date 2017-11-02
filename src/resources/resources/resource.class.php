@@ -84,7 +84,6 @@ class Resource extends ComplexObject {
 
         $path .= (substr($path, -1) === '/' ? '' : '/');
         $realpath = str_replace($path, '', $realpath);
-
         if (!file_exists($path . $realpath)){
             Restos::throwException(null, RestosLang::get('notfound'), 404);
         }
@@ -95,18 +94,15 @@ class Resource extends ComplexObject {
 
         if (strpos($decodeid, '/') === false){
             $manifestPath = $path . $realpath . "/.manifest";
-            $manifest = file_get_contents($manifestPath);
-            $metadataPath = $path . $realpath . "/.metadata";
-
-            $manifest_object = json_decode($manifest);
+            $manifestText = file_get_contents($manifestPath);
+            $json = json_decode($manifestText);
+            $manifest_object = $json->manifest;
 
             $customiconname = null;
             if (property_exists($manifest_object, 'customicon')) {
                 $customiconname =  $manifest_object->customicon;
                 $manifest_object->customicon = Restos::URIRest('c/' . $catalog_id . '/resources/' . $id . '.img');
             }
-
-            $manifest = json_encode($manifest_object);
 
             if ($customiconname) {
                 $manifest_object->customiconname = $customiconname;
@@ -118,24 +114,20 @@ class Resource extends ComplexObject {
         else {
             $basedir = dirname($realpath);
             $filename = basename($realpath);
-            $metadataPath = $path . $basedir . "/." . $filename . ".metadata";
+            $manifestPath = $path . $basedir . "/." . $filename . ".manifest";
+            $manifestText = file_get_contents($manifestPath);
+            $json = json_decode($manifestText);
 
-            $this->_manifest = new stdClass();
+            $this->_manifest = $json->manifest;
             $this->_manifest->type = "file";
             $this->_manifest->entrypoint = $filename;
-            $manifest = json_encode($this->_manifest);
         }
 
-        $metadata = "{}";
-        if (file_exists($metadataPath)) {
-            $metadata = file_get_contents($metadataPath);
-        }
-
-        $data = json_decode("{\"manifest\":$manifest,\"metadata\":$metadata}");
+        $this->clearManifest($json);
+        $data = $json;
         $data->id = $decodeid;
 
         chdir($current_path);
-
         return $data;
     }
 
@@ -199,5 +191,12 @@ class Resource extends ComplexObject {
 
         Restos::throwException(null, RestosLang::get('notfound'), 404);
 
+    }
+
+    private function clearManifest($json){
+        unset($json->manifest->id);
+        unset($json->manifest->status);
+        unset($json->manifest->lastupdated);
+        unset($json->manifest->lastpublished);
     }
 }

@@ -196,6 +196,5 @@ class Resource extends ComplexObject {
         unset($json->manifest->id);
         unset($json->manifest->status);
         unset($json->manifest->lastupdated);
-        unset($json->manifest->lastpublished);
     }
 }

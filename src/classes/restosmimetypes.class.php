@@ -1,29 +1,29 @@
 <?php
 
 /*
- *  This file is part of Restos software
- * 
- *  Restos is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- * 
- *  Restos is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- * 
- *  You should have received a copy of the GNU General Public License
- *  along with Restos.  If not, see <http://www.gnu.org/licenses/>.
- */
+*  This file is part of Restos software
+*
+*  Restos is free software: you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation, either version 3 of the License, or
+*  (at your option) any later version.
+*
+*  Restos is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with Restos.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /**
- * Description of RestosMimeTypes
- *
- * @author David Herney <davidherney@gmail.com>
- * @package Laberinto.WebServices.Restos
- * @version 0.1
- */
+* Description of RestosMimeTypes
+*
+* @author David Herney <davidherney@gmail.com>
+* @package Laberinto.WebServices.Restos
+* @version 0.1
+*/
 class RestosMimeTypes {
     public static $_MIME_TYPES = array(
         'ez' => 'application/andrew-inset',
@@ -444,18 +444,18 @@ class RestosMimeTypes {
         'zip' => 'application/zip',
         'zoo' => 'application/x-zoo');
 
-	public static $_UNKNOUN_MIME_TYPE = 'document/unknown';
+        public static $_UNKNOUN_MIME_TYPE = 'document/unknown';
 
-	public static function existsMimeType ($extension) {
-		return isset(self::$_MIME_TYPES[$extension]);
-	}
-	
-	public static function getMimeType ($extension) {
-		$extension = strtolower($extension);
-		if (self::existsMimeType($extension)) {
-			return self::$_MIME_TYPES[$extension];
-		}
-		
-		return self::$_UNKNOUN_MIME_TYPE;
-	}
+        public static function existsMimeType ($extension) {
+                return isset(self::$_MIME_TYPES[$extension]);
+        }
+
+        public static function getMimeType ($extension) {
+                $extension = strtolower($extension);
+                if (self::existsMimeType($extension)) {
+                        return self::$_MIME_TYPES[$extension];
+                }
+
+                return self::$_UNKNOUN_MIME_TYPE;
+        }
 }

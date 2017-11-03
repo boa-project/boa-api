@@ -96,6 +96,11 @@ class Resource extends ComplexObject {
             $manifestPath = $path . $realpath . "/.manifest.published";
             $manifestText = file_get_contents($manifestPath);
             $json = json_decode($manifestText);
+
+            if (!property_exists($json->manifest, 'is_a')) {
+                $json->manifest->is_a = 'dco';
+            }
+
             $manifest_object = $json->manifest;
 
             $customiconname = null;
@@ -118,8 +123,11 @@ class Resource extends ComplexObject {
             $json = json_decode($manifestText);
 
             $this->_manifest = $json->manifest;
-            $this->_manifest->type = "file";
             $this->_manifest->entrypoint = $filename;
+
+            if (!property_exists($this->_manifest, 'is_a')) {
+                $this->_manifest->is_a = 'dro';
+            }
         }
 
         $this->clearManifest($json);
@@ -152,11 +160,12 @@ class Resource extends ComplexObject {
                 $res->type = $ext;
             }
 
-            if ($this->_manifest->type == 'file') {
+            if ($this->_manifest->is_a == 'dro') {
                 $basepath = $path = $this->_path . $this->_realpath;
                 $parts = explode('.', $path);
                 $ext = strtolower(array_pop($parts));
                 $res->type = $ext;
+                Restos::$DefaultRestGeneric->RestResponse->setHeader('content-disposition', 'Content-disposition: inline; filename="' . $this->_manifest->entrypoint . '"');
             }
             else {
                 $basepath = $this->_path . $this->_realpath . '/content';
@@ -174,6 +183,7 @@ class Resource extends ComplexObject {
                         $parts = explode('.', $path);
                         $ext = strtolower(array_pop($parts));
                         $res->type = $ext;
+                        Restos::$DefaultRestGeneric->RestResponse->setHeader('content-disposition', 'Content-disposition: inline; filename="' . $this->_manifest->entrypoint . '"');
                     }
                     else {
                         $path .= 'index.html';

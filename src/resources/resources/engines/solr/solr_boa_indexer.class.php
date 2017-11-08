@@ -97,7 +97,7 @@ class Solr_boa_indexer {
         $path = $catalog->path;
         $this->_catalog_id = $catalog->alias;
 
-        $entries = glob($path."/*/{.}manifest", GLOB_NOSORT|GLOB_BRACE);
+        $entries = glob($path."/*/{.}manifest.published", GLOB_NOSORT|GLOB_BRACE);
 
         $this->_execution_id = uniqid();
         $docUpdates = array("p" => array(), "f" => array());
@@ -173,25 +173,17 @@ class Solr_boa_indexer {
 
         $last_update = $solr_info ? $solr_info["last_update"] : null;
         //DateTime::createFromFormat("y-m-d H:i:s", "70-01-01 00:00:00", new DateTimeZone("UTC"));
+        $id = $dirname;
         $hasChanged = $this->fileHasChanged($manifestPath, $last_update);
-        $manifest = file_get_contents($manifestPath);
-        $json = json_decode($manifest);
-        $id = isset($json->id) ? $json->id : $dirname;
-        unset($json->id);
-        $manifest = json_encode($json);
-
-        $metadata = "{}";
-        if (file_exists($dir."/.metadata")) {
-            $hasChanged |= $this->fileHasChanged($dir."/.metadata", $last_update);
-            if ($hasChanged){
-                $metadata = file_get_contents($dir."/.metadata");        
-            }; //Do not process unchanged files unless it is first time
-        }
-
+        $content = file_get_contents($manifestPath);
+        $json = json_decode($content);
+        $id = isset($json->manifest) && isset($json->manifest->id) ? $json->manifest->id : $dirname;
+        
         if ($hasChanged){
-            $doc = json_encode("{\"manifest\":$manifest,\"metadata\":$metadata}");
-            //var_dump(json_encode("{\"manifest\":$manifest,\"metadata\":$metadata}"));
-            $docUpdates["f"][] = "{\"id\":\"$id\",\"catalog_id\":\"{$this->_catalog_id}\",\"execution_id\":\"$run_id\",\"manifest\":$manifest,\"metadata\":$metadata,\"rawdoc\":$doc}";
+            $this->clearForIndexation($json);
+            $doc = json_encode($json);
+            $docUpdates["f"][] = json_encode(array("id" => $id, "catalog_id" => $this->_catalog_id,
+                "execution_id" => $run_id, "manifest" => $json->manifest, "metadata" => $json->metadata, "rawdoc" => $doc));
         }
         else {
             $docUpdates["p"][] = "{\"id\":\"$id\",\"execution_id\":{\"set\":\"$run_id\"}}";
@@ -200,7 +192,7 @@ class Solr_boa_indexer {
     }
 
     private function visitObjectContent($id, $dir, &$docUpdates){
-        $children = glob_recursive($dir."/content/{.}*.metadata", GLOB_NOSORT|GLOB_BRACE);
+        $children = glob_recursive($dir."/content/{.}*.manifest.published", GLOB_NOSORT|GLOB_BRACE);
         $client = $this->_client;
         $children_info = $client->getDocumentChildren($id);
         if ($children_info === false){
@@ -218,17 +210,24 @@ class Solr_boa_indexer {
     private function visitChildObject($path, $metadataPath, &$docUpdates, $last_update){
         $run_id = $this->_execution_id;
         $hasChanged = $this->fileHasChanged($metadataPath, $last_update);
-        $id = dirname($path) . "/" . substr(str_replace('.metadata', '', basename($path)), 1);
+        $id = dirname($path) . "/" . substr(str_replace('.manifest.published', '', basename($path)), 1);
         if (!$hasChanged){
             $docUpdates["p"][] = "{\"id\":\"$id\",\"execution_id\":{\"set\":\"$run_id\"}}";
             return;
         }
-        $metadata = file_get_contents($metadataPath);
-        $manifestJ = new \stdClass();
-        $manifest = json_encode($manifestJ);
-        $doc = json_encode("{\"manifest\":$manifest,\"metadata\":$metadata}");
+        $content = file_get_contents($metadataPath);
+        $json = json_decode($content);
+        $this->clearForIndexation($json);
+        $doc = json_encode($json);
 
-        $docUpdates["f"][] = "{\"id\":\"$id\",\"catalog_id\":\"{$this->_catalog_id}\",\"execution_id\":\"$run_id\",\"manifest\":$manifest,\"metadata\":$metadata,\"rawdoc\":$doc}";
+        $docUpdates["f"][] = json_encode(array("id" => $id, "catalog_id" => $this->_catalog_id,
+            "execution_id" => $run_id, "manifest" => $json->manifest, "metadata" => $json->metadata, "rawdoc" => $doc));
+    }
+
+    private function clearForIndexation($json){
+        unset($json->manifest->id);
+        unset($json->manifest->status);
+        unset($json->manifest->lastupdated);
     }
 
     private function fileHasChanged($path, $last_update){

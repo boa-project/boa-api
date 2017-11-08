@@ -35,4 +35,40 @@ class RestMapping_Resources extends RestMapping {
         parent::__construct($data, "resource", "resources");
     }
 
+    public function getMapping($type, $resource = null) {
+
+        if ($type == 'IMG' && $resource) {
+            $path = $resource->getCustomIconPath();
+
+            if ($path && file_exists($path)) {
+                $parts = explode('.', $path);
+                $ext = strtolower($parts[count($parts) - 1]);
+                Restos::$DefaultRestGeneric->RestResponse->Type = $ext;
+
+                return file_get_contents($path);
+            }
+            else {
+                $parts = explode('.', $resource->id);
+                $ext = strtolower(array_pop($parts));
+
+                $params = Restos::$DefaultRestGeneric->RestReceive->getParameters();
+                $ext .= isset($params['s']) && is_numeric($params['s']) ? '-' . $params['s'] : '';
+
+                $iconfile = 'resources/resources/assets/f/' . $ext . '.png';
+
+                if (!file_exists($iconfile)) {
+                    $iconfile = 'resources/resources/assets/icon.png';
+                }
+
+                Restos::$DefaultRestGeneric->RestResponse->Type = 'PNG';
+                return file_get_contents($iconfile);
+            }
+        }
+        else {
+            return parent::getMapping($type);
+        }
+
+    }
+
+
 }

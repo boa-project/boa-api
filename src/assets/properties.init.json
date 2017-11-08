@@ -4,6 +4,7 @@
     "Resources" : ["resources", "queries"],
     "Components" : ["GlobalConfiguration", "ExternalHosting", "RelativeUser", "AppConfiguration"],
     "SessionEnable" : true,
+    "ResourcesSlice" : "/!/",
     "Email" : {
         "From" : "<EMAIL_FROM_ADDRES>",
         "FromName" : "<EMAIL_FROM_NAME>",

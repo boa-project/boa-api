@@ -91,7 +91,17 @@ class Solr_querybuilder {
             $this->_query["fq"][] = "manifest.conexion_type:" . $filters->connection; 
         }
         if ($filters->catalog){
-            $this->_query["fq"][] = "catalog_id:" . $filters->catalog;
+            if (is_array($filters->catalog)) {
+                $catalogues = array();
+                foreach($filters->catalog as $catalog) {
+                    $catalogues[] = "catalog_id:" . $catalog;
+                }
+
+                $this->_query["fq"][] = implode(' OR ', $catalogues);
+            }
+            else {
+                $this->_query["fq"][] = "catalog_id:" . $filters->catalog;
+            }
         }
         //$this->_query["wt"] = "json";
         //var_dump($filters);

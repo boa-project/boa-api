@@ -106,7 +106,16 @@ class RestResource_Resources extends RestResource {
 
                 $filters->user          = isset($params['(user)']) ? $params['(user)'] : null;
                 $filters->connection    = isset($params['(conn)']) ? $params['(conn)'] : null;
-                $filters->catalog       = $resources->Resources->c;
+
+                if (strpos($resources->Resources->c, '[') === 0) {
+                    $catalog = explode('|', rtrim(ltrim($resources->Resources->c, '['), ']'));
+
+                }
+                else {
+                    $catalog = $resources->Resources->c;
+                }
+
+                $filters->catalog = $catalog;
 
                 $engine = isset($params['(engine)']) ? $params['(engine)'] : null;
 

@@ -11,6 +11,18 @@ CREATE TABLE IF NOT EXISTS `boaapi_queries` (
 
 -- --------------------------------------------------------
 
+CREATE TABLE IF NOT EXISTS `boaapi_counters` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `resource_id` varchar(1023) NOT NULL,
+  `key` varchar(31) NOT NULL,
+  `value` int(10) NOT NULL,
+  `context` varchar(127) NOT NULL,
+  `updated_at` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
 CREATE TABLE IF NOT EXISTS `boaapi_logs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,

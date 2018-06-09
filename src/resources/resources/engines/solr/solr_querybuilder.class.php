@@ -88,7 +88,27 @@ class Solr_querybuilder {
             $this->_query["fq"][] = "manifest.author:" . $filters->user;
         }
         if ($filters->connection){
-            $this->_query["fq"][] = "manifest.conexion_type:" . $filters->connection; 
+            $this->_query["fq"][] = "manifest.conexion_type:" . $filters->connection;
+        }
+        if ($filters->metas){
+            $metas = array();
+            foreach ($filters->metas as $meta => $value) {
+                if (is_array($value)) {
+                    $optional = array();
+                    foreach ($value as $text) {
+                        if (is_string($text)) {
+                            $optional[] = $meta . ':' . $text;
+                        }
+                    }
+                    if (count($optional) > 0) {
+                        $metas[] = '(' . implode(' OR ', $optional) . ')';
+                    }
+                }
+                else {
+                    $metas[] = $meta . ':' . $value;
+                }
+            }
+            $this->_query["fq"][] = implode(' AND ', $metas);
         }
         if ($filters->catalog){
             if (is_array($filters->catalog)) {
@@ -133,7 +153,7 @@ class Solr_querybuilder {
     /**
      *
      *
-     * @param 
+     * @param
      */
     public function buildAndExecute($query){
         $this->_query['q'] = $query;
@@ -153,7 +173,7 @@ class Solr_querybuilder {
     /**
      *
      *
-     * @param 
+     * @param
      */
     private function getQueryString(){
         return implode('&', array_filter(array_map(array($this, 'parseQueryItem'), array_keys($this->_query))));
@@ -162,7 +182,7 @@ class Solr_querybuilder {
     /**
      *
      *
-     * @param 
+     * @param
      */
     private function parseQueryItem($key){
         if (!$this->_query[$key]) return false;

@@ -93,6 +93,7 @@ class Resource extends ComplexObject {
         $this->_path = $path;
 
         if (strpos($decodeid, '/') === false){
+            // It is a root Object.
             $manifestPath = $path . $realpath . "/.manifest.published";
             $manifestText = file_get_contents($manifestPath);
             $json = json_decode($manifestText);
@@ -113,9 +114,27 @@ class Resource extends ComplexObject {
                 $manifest_object->customiconname = $customiconname;
             }
 
+            $manifest_object->alternate = array();
+            // If it has an specific file as entry point, explore by alternate files
+            if (property_exists($manifest_object, 'entrypoint')) {
+                if ($altern_path = $this->getAlternatePath()) {
+                    $altern_path .= '/content/' . $manifest_object->entrypoint;
+
+                    $manifest_object->alternate = $altern_path;
+                    if (file_exists($altern_path)) {
+
+                        $files = scandir($altern_path,  SCANDIR_SORT_NONE);
+                        $files = array_values(array_diff($files, array('..', '.')));
+
+                        $manifest_object->alternate = $files;
+                    }
+                }
+            }
+
             $this->_manifest = $manifest_object;
         }
         else {
+            // It is a specific file.
             $basedir = dirname($realpath);
             $filename = basename($realpath);
             $manifestPath = $path . $basedir . "/." . $filename . ".manifest.published";
@@ -128,6 +147,19 @@ class Resource extends ComplexObject {
             if (!property_exists($this->_manifest, 'is_a')) {
                 $this->_manifest->is_a = 'dro';
             }
+
+            $this->_manifest->alternate = array();
+            // Explore by alternate files.
+            if ($altern_path = $this->getAlternatePath()) {
+
+                $files = scandir($altern_path,  SCANDIR_SORT_NONE);
+                $this->_manifest->alternate = array_values(array_diff($files, array('..', '.')));
+            }
+        }
+
+        // The customicon name is set by defect if not exists.
+        if (!property_exists($json->manifest, 'customicon') || empty($json->manifest->customicon)) {
+            $json->manifest->customicon = Restos::URIRest('c/' . $catalog_id . '/resources/' . $id . '.img');
         }
 
         $this->clearManifest($json);
@@ -140,11 +172,45 @@ class Resource extends ComplexObject {
 
     public function getCustomIconPath() {
 
-        if (!($this->_manifest) || !property_exists($this->_manifest, 'customiconname') || empty($this->_manifest->customiconname)){
+        if (!($this->_manifest)
+                || !property_exists($this->_manifest, 'customiconname')
+                || empty($this->_manifest->customiconname)) {
+
+            if ($altern_path = $this->getAlternatePath()) {
+
+                $icon_path = $altern_path . '/thumb.png';
+
+                if (file_exists($icon_path)) {
+                    return $icon_path;
+                }
+            }
             return null;
         }
 
         return $this->_path . $this->_realpath . '/src/' . $this->_manifest->customiconname;
+    }
+
+    /**
+     * @param $full If false return only the root object path.
+     */
+    private function getAlternatePath($full = true) {
+
+        if (!isset($this->_path) || !isset($this->_realpath)) {
+            return null;
+        }
+
+        $dirs = explode('/', $this->_realpath);
+        $path = $this->_path . $dirs[0] . '/.alternate';
+
+        if (!$full) {
+            return file_exists($path) ? $path : null;
+        }
+
+        $filename = basename($this->_realpath);
+        $specific_path = ltrim($this->_realpath, $dirs[0]);
+        $specific_path = $path . $specific_path;
+
+        return file_exists($specific_path) ? $specific_path : null;
     }
 
     public function getContent($path) {

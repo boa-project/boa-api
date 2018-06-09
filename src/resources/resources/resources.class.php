@@ -80,13 +80,17 @@ class Resources extends ComplexObjectList {
     public function execute($query = null, $number = null, $start_on = null, $filters = null, $mode = null) {
         $list = $this->_engineobject->queryExecute($query, $number, $start_on, $filters, $mode);
 
-        foreach($list as $one) {
-            $one->about = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . base64_encode($one->id));
+        foreach($list as $key => $one) {
+
+            // Replace the single by full manifest.
+            $fullone = new Resource($one->catalog_id, base64_encode($one->id));
+            $one->manifest = $fullone->manifest;
+            /*$one->about = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . base64_encode($one->id));
 
             if (property_exists($one->manifest, 'customicon') && !empty($one->manifest->customicon)) {
                 // The customicon name is replaced by the specific object image uri. Only if customicon exists.
                 $one->manifest->customicon = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . base64_encode($one->id) . '.img');
-            }
+            }*/
         }
 
         return $list;

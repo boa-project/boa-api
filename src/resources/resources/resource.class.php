@@ -157,6 +157,10 @@ class Resource extends ComplexObject {
             }
         }
 
+        Restos::using('resources.counters.counters');
+        $counters = new Counters();
+        $json->social = $counters->getSocialCounters($decodeid);
+
         // The customicon name is set by defect if not exists.
         if (!property_exists($json->manifest, 'customicon') || empty($json->manifest->customicon)) {
             $json->manifest->customicon = Restos::URIRest('c/' . $catalog_id . '/resources/' . $id . '.img');
@@ -213,11 +217,12 @@ class Resource extends ComplexObject {
         return file_exists($specific_path) ? $specific_path : null;
     }
 
-    public function getContent($path) {
+    public function getContent($path, $loadcontent = false) {
 
         $res = new stdClass();
         $res->body = '';
         $res->type = null;
+        $res->path = null;
 
         if (isset($path)) {
             if (strpos($path, '.') !== false) {
@@ -258,7 +263,11 @@ class Resource extends ComplexObject {
                 }
 
                 if (file_exists($path)) {
-                    $res->body = file_get_contents($path);
+                    $res->path = $path;
+
+                    if ($loadcontent) {
+                        $res->body = file_get_contents($path);
+                    }
                     return $res;
                 }
             }

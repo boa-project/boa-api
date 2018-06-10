@@ -85,9 +85,10 @@ class Resources extends ComplexObjectList {
             // Replace the single by full manifest.
             $fullone = new Resource($one->catalog_id, base64_encode($one->id));
             $one->manifest = $fullone->manifest;
-            /*$one->about = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . base64_encode($one->id));
+            $one->social = $fullone->social;
+            $one->about = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . base64_encode($one->id));
 
-            if (property_exists($one->manifest, 'customicon') && !empty($one->manifest->customicon)) {
+            /*if (property_exists($one->manifest, 'customicon') && !empty($one->manifest->customicon)) {
                 // The customicon name is replaced by the specific object image uri. Only if customicon exists.
                 $one->manifest->customicon = Restos::URIRest('c/' . $one->catalog_id . '/resources/' . base64_encode($one->id) . '.img');
             }*/

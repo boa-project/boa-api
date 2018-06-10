@@ -67,12 +67,31 @@ class RestResource_Resources extends RestResource {
             $content_path = $this->_restGeneric->RestReceive->getURIParameters();
 
             if (isset($content_path)) {
-                $content = $resource->getContent($content_path);
-                $this->_restGeneric->RestResponse->Content = $content->body;
+
+                $content = $resource->getContent($content_path, false);
+
+                if (!$content->path) {
+                    Restos::throwException(null, RestosLang::get('notfound'), 404);
+                }
+
+                try {
+                    $view = false;Restos::getSession('resource', 'counters/view', $resource->id, false);
+                    if (!$view) {
+                        Restos::setSession('resource', 'counters/view', $resource->id, true);
+                        $counter = new Counter();
+                        $counter->registerView($resource);
+                    }
+                }
+                catch (Exception $e) {
+                    // Nothing to do.
+                }
 
                 if ($content->type) {
                     $this->_restGeneric->RestResponse->Type = $content->type;
                 }
+
+                $mapping = new RestMapping_Resources($data);
+                $this->_restGeneric->RestResponse->Content = $mapping->putContent($content);
 
                 return true;
             }

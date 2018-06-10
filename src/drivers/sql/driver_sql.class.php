@@ -220,6 +220,19 @@ class Driver_sql implements iPersistenceOperations {
         }
     }
 
+    /**
+     * Excecute a SQL sentence.
+     * Important!: Only use in emergency case.
+     *
+     * @param string $sql
+     * @param array $datatypes
+     * @param array $parameters
+     * @return int affected rows counter
+     */
+    public function excecute($sql, array $datatypes, array $parameters){
+        return $this->_connection->excecute($sql, $datatypes, $parameters);
+    }
+
     public function getEntityStructure($entity) {
         $def = $this->_connection->table_info($this->_prefix . $entity);
 

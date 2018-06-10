@@ -160,6 +160,7 @@ class Solr_querybuilder {
         $fields = $this->_query['fl'];
         unset($this->_query['fl']); //Do not set the fields options on the api query
         $queryString = $this->getQueryString();
+
         $client = new Solr_client($this->_properties->URI);
         $client->setOutputFields($fields);
         $docs = $client->getDocumentsByQuery($queryString, false); //Do not transform response
@@ -188,7 +189,12 @@ class Solr_querybuilder {
         if (!$this->_query[$key]) return false;
 
         if (is_array($this->_query[$key])){
-            return $key . "=" . urlencode(implode(' ', $this->_query[$key]));
+            $return = array();
+            foreach ($this->_query[$key] as $l) {
+                $return[] = $key . "=" . urlencode($l);
+            }
+            return implode('&', $return);
+            //return $key . "=" . urlencode(implode(' ', $this->_query[$key]));
         }
         return $key . "=" . urlencode($this->_query[$key]);
     }

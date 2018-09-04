@@ -75,11 +75,13 @@ class RestResource_Resources extends RestResource {
                 }
 
                 try {
-                    $view = false;Restos::getSession('resource', 'counters/view', $resource->id, false);
-                    if (!$view) {
-                        Restos::setSession('resource', 'counters/view', $resource->id, true);
-                        $counter = new Counter();
-                        $counter->registerView($resource);
+                    if (!Resource::isPreviewPath($content_path)) {
+                        $view = Restos::getSession('resource', 'counters/view', $resource->id, false);
+                        if (!$view) {
+                            Restos::setSession('resource', 'counters/view', $resource->id, true);
+                            $counter = new Counter();
+                            $counter->registerView($resource);
+                        }
                     }
                 }
                 catch (Exception $e) {

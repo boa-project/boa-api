@@ -36,6 +36,12 @@ class Resource extends ComplexObject {
 
     private $_manifest = null;
 
+    const PREVIEW_THUMB_NAME = 'thumb.png';
+    const PREVIEW_POSTER_NAME = 'poster.png';
+    const PREVIEW_ANIMATED_NAME = 'preview.png';
+
+    const PREVIEW_NAMES = array(self::PREVIEW_THUMB_NAME, self::PREVIEW_POSTER_NAME, self::PREVIEW_ANIMATED_NAME);
+
     public function __construct($catalog_id, $id) {
 
         $data = Restos::$DefaultRestGeneric->getDriverData("resources");
@@ -182,7 +188,7 @@ class Resource extends ComplexObject {
 
             if ($altern_path = $this->getAlternatePath()) {
 
-                $icon_path = $altern_path . '/thumb.png';
+                $icon_path = $altern_path . '/' . self::PREVIEW_THUMB_NAME;
 
                 if (file_exists($icon_path)) {
                     return $icon_path;
@@ -300,5 +306,14 @@ class Resource extends ComplexObject {
         unset($json->manifest->id);
         unset($json->manifest->status);
         unset($json->manifest->lastupdated);
+    }
+
+    /**
+     * @param $path The path to analyse
+     * @return true if the path is for a preview file; false in other case.
+     */
+    public static function isPreviewPath($path) {
+        $slices = explode('/', $path);
+        return (strpos($path, '.alternate/') === 0 && in_array($slices[count($slices) - 1], self::PREVIEW_NAMES));
     }
 }

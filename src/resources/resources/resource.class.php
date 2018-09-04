@@ -224,7 +224,15 @@ class Resource extends ComplexObject {
         $res->type = null;
         $res->path = null;
 
+        $alternate = false;
+
         if (isset($path)) {
+
+            if (strpos($path, '.alternate/') === 0) {
+                $path = ltrim($path, '.alternate/');
+                $alternate = true;
+            }
+
             if (strpos($path, '.') !== false) {
                 $parts = explode('.', $path);
                 $ext = strtolower(array_pop($parts));
@@ -232,18 +240,29 @@ class Resource extends ComplexObject {
             }
 
             if ($this->_manifest->is_a == 'dro') {
-                $basepath = $path = $this->_path . $this->_realpath;
+                if ($alternate) {
+                    $basepath = $path = $this->getAlternatePath(false) . '/content/' . $path;
+                }
+                else {
+                    $basepath = $path = $this->_path . $this->_realpath;
+                }
                 $parts = explode('.', $path);
                 $ext = strtolower(array_pop($parts));
                 $res->type = $ext;
                 Restos::$DefaultRestGeneric->RestResponse->setHeader('content-disposition', 'Content-disposition: inline; filename="' . $this->_manifest->entrypoint . '"');
             }
             else {
-                $basepath = $this->_path . $this->_realpath . '/content';
+                if ($alternate) {
+                    $basepath = $this->getAlternatePath(false) . '/content';
+                }
+                else {
+                    $basepath = $this->_path . $this->_realpath . '/content';
+                }
                 $path = realpath($basepath . '/' . $path);
             }
 
             $pos_basepath = strpos($path, $basepath);
+
             if ($pos_basepath !== false &&  $pos_basepath === 0) {
                 if (is_dir($path)) {
                     // To guarantee that the last one char is '/'.

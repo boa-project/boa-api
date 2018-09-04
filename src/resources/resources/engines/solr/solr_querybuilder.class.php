@@ -90,7 +90,7 @@ class Solr_querybuilder {
         if ($filters->connection){
             $this->_query["fq"][] = "manifest.conexion_type:" . $filters->connection;
         }
-        if ($filters->metas){
+        if ($filters->metas && is_array($filters->metas) && count($filters->metas) > 0) {
             $metas = array();
             foreach ($filters->metas as $meta => $value) {
                 if (is_array($value)) {

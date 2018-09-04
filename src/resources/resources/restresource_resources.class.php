@@ -120,7 +120,7 @@ class RestResource_Resources extends RestResource {
                 $filters->metas = isset($params['(meta)']) ? $params['(meta)'] : null;
 
                 if (!is_array($filters->metas)) {
-                    $filters->metas[$filters->metas] = "*";
+//                    $filters->metas[$filters->metas] = "*";
                 }
 
                 if (isset($params['(ext)'])) {

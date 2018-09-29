@@ -88,7 +88,27 @@ class Solr_querybuilder {
             $this->_query["fq"][] = "manifest.author:" . $filters->user;
         }
         if ($filters->connection){
-            $this->_query["fq"][] = "manifest.conexion_type:" . $filters->connection; 
+            $this->_query["fq"][] = "manifest.conexion_type:" . $filters->connection;
+        }
+        if ($filters->metas && is_array($filters->metas) && count($filters->metas) > 0) {
+            $metas = array();
+            foreach ($filters->metas as $meta => $value) {
+                if (is_array($value)) {
+                    $optional = array();
+                    foreach ($value as $text) {
+                        if (is_string($text)) {
+                            $optional[] = $meta . ':' . $text;
+                        }
+                    }
+                    if (count($optional) > 0) {
+                        $metas[] = '(' . implode(' OR ', $optional) . ')';
+                    }
+                }
+                else {
+                    $metas[] = $meta . ':' . $value;
+                }
+            }
+            $this->_query["fq"][] = implode(' AND ', $metas);
         }
         if ($filters->catalog){
             if (is_array($filters->catalog)) {
@@ -133,13 +153,14 @@ class Solr_querybuilder {
     /**
      *
      *
-     * @param 
+     * @param
      */
     public function buildAndExecute($query){
         $this->_query['q'] = $query;
         $fields = $this->_query['fl'];
         unset($this->_query['fl']); //Do not set the fields options on the api query
         $queryString = $this->getQueryString();
+
         $client = new Solr_client($this->_properties->URI);
         $client->setOutputFields($fields);
         $docs = $client->getDocumentsByQuery($queryString, false); //Do not transform response
@@ -153,7 +174,7 @@ class Solr_querybuilder {
     /**
      *
      *
-     * @param 
+     * @param
      */
     private function getQueryString(){
         return implode('&', array_filter(array_map(array($this, 'parseQueryItem'), array_keys($this->_query))));
@@ -162,13 +183,18 @@ class Solr_querybuilder {
     /**
      *
      *
-     * @param 
+     * @param
      */
     private function parseQueryItem($key){
         if (!$this->_query[$key]) return false;
 
         if (is_array($this->_query[$key])){
-            return $key . "=" . urlencode(implode(' ', $this->_query[$key]));
+            $return = array();
+            foreach ($this->_query[$key] as $l) {
+                $return[] = $key . "=" . urlencode($l);
+            }
+            return implode('&', $return);
+            //return $key . "=" . urlencode(implode(' ', $this->_query[$key]));
         }
         return $key . "=" . urlencode($this->_query[$key]);
     }

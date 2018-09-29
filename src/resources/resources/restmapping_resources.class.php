@@ -27,7 +27,7 @@
 class RestMapping_Resources extends RestMapping {
 
     /**
-     * 
+     *
      * Construct
      * @param object or array $data
      */
@@ -70,5 +70,20 @@ class RestMapping_Resources extends RestMapping {
 
     }
 
+    public function putContent($content) {
+
+        switch ($content->type) {
+            case 'mp4':
+            case 'ogg':
+            case 'webm':
+                Restos::using('third_party.videostream.videostream');
+                $videostream = new VideoStream($content->path);
+                $videostream->start();
+                exit;
+                break;
+            default:
+                return file_get_contents($content->path);
+        }
+    }
 
 }

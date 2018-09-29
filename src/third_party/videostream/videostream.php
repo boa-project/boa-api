@@ -150,6 +150,8 @@ class VideoStream
      */
     function start($s3 = false)
     {
+        session_write_close();
+
         if ($s3) {
             $this->openFromS3();
         }

@@ -31,7 +31,7 @@ class Counter extends ComplexObject {
 
     const TYPE_VIEWS = 'views';
 
-    const TYPE_GRADE = 'finalgrade';
+    const TYPE_SCORE = 'score';
 
     const TYPE_COMMENTS = 'comments';
 
@@ -57,5 +57,4 @@ class Counter extends ComplexObject {
     public function registerView($resource) {
         $this->_driver->increase(self::TYPE_VIEWS, 1, $resource->id);
     }
-
 }

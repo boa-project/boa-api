@@ -50,7 +50,7 @@ class Driver_counters extends Driver_sql {
         }
 
         $types = "'" . implode("','", $types) . "'";
-        $sql = "SELECT type, value FROM {$this->_prefix}counters WHERE resource = :resource AND type IN ($types)";
+        $sql = "SELECT type, value, context FROM {$this->_prefix}counters WHERE resource = :resource AND type IN ($types)";
 
         $params = array(':resource' => $resource);
 

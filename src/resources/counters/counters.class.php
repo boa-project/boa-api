@@ -50,18 +50,32 @@ class Counters extends ComplexObjectList {
 
     public function getSocialCounters($resource) {
 
-        $types = array(Counter::TYPE_VIEWS, Counter::TYPE_GRADE, Counter::TYPE_COMMENTS);
+        $types = array(Counter::TYPE_VIEWS, Counter::TYPE_SCORE, Counter::TYPE_COMMENTS);
         $counters = $this->_driver->getSocialCounters($resource, $types);
 
         $social = new stdClass();
         foreach ($types as $type) {
-            $value = 0;
-            foreach ($counters as $counter) {
-                if ($counter->type == $type) {
-                    $value = (int)$counter->value;
-                    break;
+            if ($type == Counter::TYPE_SCORE) {
+                if (!property_exists($social, $type)) {
+                    $value = array();
+                }
+
+                foreach ($counters as $counter) {
+                    if ($counter->type == $type) {
+                        $value[$counter->context] = (int)$counter->value;
+                    }
                 }
             }
+            else {
+                $value = 0;
+                foreach ($counters as $counter) {
+                    if ($counter->type == $type) {
+                        $value = (int)$counter->value;
+                        break;
+                    }
+                }
+            }
+
             $social->$type = $value;
         }
 

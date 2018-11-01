@@ -36,6 +36,18 @@ CREATE TABLE IF NOT EXISTS `boaapi_scores` (
 
 -- --------------------------------------------------------
 
+CREATE TABLE IF NOT EXISTS `boaapi_comments` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `resource` varchar(511) NOT NULL,
+  `owner` varchar(511) NOT NULL,
+  `content` varchar(1023) NOT NULL,
+  `updated_at` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX boaapi_comments_resource (`resource`)
+) DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
 CREATE TABLE IF NOT EXISTS `boaapi_logs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,

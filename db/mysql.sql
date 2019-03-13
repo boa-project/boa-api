@@ -11,6 +11,43 @@ CREATE TABLE IF NOT EXISTS `boaapi_queries` (
 
 -- --------------------------------------------------------
 
+CREATE TABLE IF NOT EXISTS `boaapi_counters` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `resource` varchar(511) NOT NULL,
+  `type` varchar(31) NOT NULL,
+  `value` int(10) NOT NULL,
+  `context` varchar(127) NULL,
+  `updated_at` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX boaapi_counters_resource (`resource`),
+  INDEX boaapi_counters_restype (`resource`, `type`)
+) DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `boaapi_scores` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `resource` varchar(511) NOT NULL,
+  `value` int(10) NOT NULL,
+  `updated_at` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX boaapi_scores_resource (`resource`)
+) DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `boaapi_comments` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `resource` varchar(511) NOT NULL,
+  `owner` varchar(511) NOT NULL,
+  `content` varchar(1023) NOT NULL,
+  `updated_at` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX boaapi_comments_resource (`resource`)
+) DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
 CREATE TABLE IF NOT EXISTS `boaapi_logs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,

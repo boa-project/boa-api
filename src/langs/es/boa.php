@@ -41,3 +41,5 @@ $s['searchengine.solr.parsererror'] = 'La cadena de consulta está mal construid
 $s['searchengine.catalognotfound'] = 'No se encontró el catálogo {$a}';
 $s['searchengine.catalogpathnotfound'] = 'No se encontró la ruta para el catálogo {$a}';
 $s['searchengine.badid'] = 'Id mal construido ({$a})';
+$s['comments.unknown'] = 'Desconocido';
+$s['comments.contentrequired'] = 'El contenido es obligatorio';

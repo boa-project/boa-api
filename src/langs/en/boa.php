@@ -41,4 +41,5 @@ $s['searchengine.solr.parsererror'] = 'Error parsing the query string';
 $s['searchengine.catalognotfound'] = 'Catalog {$a} not found';
 $s['searchengine.catalogpathnotfound'] = 'Path for catalog {$a} not found';
 $s['searchengine.badid'] = 'Bad formed id ({$a})';
-
+$s['comments.unknown'] = 'Unknown';
+$s['comments.contentrequired'] = 'The content is required';

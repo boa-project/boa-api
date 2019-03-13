@@ -67,12 +67,33 @@ class RestResource_Resources extends RestResource {
             $content_path = $this->_restGeneric->RestReceive->getURIParameters();
 
             if (isset($content_path)) {
-                $content = $resource->getContent($content_path);
-                $this->_restGeneric->RestResponse->Content = $content->body;
+
+                $content = $resource->getContent($content_path, false);
+
+                if (!$content->path) {
+                    Restos::throwException(null, RestosLang::get('notfound'), 404);
+                }
+
+                try {
+                    if (!Resource::isPreviewPath($content_path)) {
+                        $view = Restos::getSession('resource', 'counters/view', $resource->id, false);
+                        if (!$view) {
+                            Restos::setSession('resource', 'counters/view', $resource->id, true);
+                            $counter = new Counter();
+                            $counter->registerView($resource);
+                        }
+                    }
+                }
+                catch (Exception $e) {
+                    // Nothing to do.
+                }
 
                 if ($content->type) {
                     $this->_restGeneric->RestResponse->Type = $content->type;
                 }
+
+                $mapping = new RestMapping_Resources($data);
+                $this->_restGeneric->RestResponse->Content = $mapping->putContent($content);
 
                 return true;
             }
@@ -92,7 +113,17 @@ class RestResource_Resources extends RestResource {
 
                 $filters = new stdClass();
                 $filters->specification = isset($params['(spec)']) ? $params['(spec)'] : null;
-                $filters->metas         = isset($params['(meta)']) ? $params['(meta)'] : null;
+
+                // (meta) parameter can be a string or a single array or a multi-valued array.
+                // Example:
+                // (meta)=metadata.technical.format // The metadata exists
+                // (meta)[metadata.technical.format]=video // Only with format: video
+                // (meta)[metadata.technical.format][]=video&(meta)[metadata.technical.format][]=audio // Videos and Audios
+                $filters->metas = isset($params['(meta)']) ? $params['(meta)'] : null;
+
+                if (!is_array($filters->metas)) {
+//                    $filters->metas[$filters->metas] = "*";
+                }
 
                 if (isset($params['(ext)'])) {
                     $extensions = explode(',', $params['(ext)']);

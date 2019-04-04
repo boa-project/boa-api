@@ -15,6 +15,7 @@
 2 INSTALLING SOLR SEARCH Engine (Only if you are going to use Solr Search Engine)
 
 Requires Java runtime environment (JRE) 1.8 or greater  
+Requires PHP-SOLR extension (View https://www.php.net/manual/es/book.solr.php)  
 
 For a full description of installation instructions visit 
     [https://lucene.apache.org/solr/guide/6_6/taking-solr-to-production.html]()
@@ -82,7 +83,8 @@ a. Download or clone boa-api project source to a folder on the installation serv
 
 b. Create a database with UTF8 General CI encoding, this database will be used to store boa general system information.  
 
-c. Create a user with read/write access to the above created database.
+c. Create a user with read/write access to the above created database.
+
 b. Locate [installation-folder]/src/properties.json.sample file and copy it to [installation-folder]/src/properties.json 
 
 c. Edit [installation-folder]/src/properties.json to provide database access configuration and others:

@@ -59,6 +59,10 @@ class Solr_querybuilder {
             'wt' => 'json'
         );
         $this->setMode();
+
+        if (!class_exists('SolrUtils')) {
+            Restos::throwException(null, RestosLang::get('searchengine.solr.notphpextension', 'boa'), 500);
+        }
     }
     /*
       . id
@@ -157,6 +161,7 @@ class Solr_querybuilder {
      */
     public function buildAndExecute($query){
         $this->_query['q'] = $query;
+
         $fields = $this->_query['fl'];
         unset($this->_query['fl']); //Do not set the fields options on the api query
         $queryString = $this->getQueryString();
@@ -166,7 +171,15 @@ class Solr_querybuilder {
         $docs = $client->getDocumentsByQuery($queryString, false); //Do not transform response
 
         if ($docs === false){
-            Restos::throwException(null, $client->errorMessage(), $client->errorNumber());
+
+            // To fix query errors on search.
+            $this->_query['q'] = SolrUtils::escapeQueryChars($query);
+            $queryString = $this->getQueryString();
+            $docs = $client->getDocumentsByQuery($queryString, false); //Do not transform response
+
+            if ($docs === false){
+                Restos::throwException(null, $client->errorMessage(), $client->errorNumber());
+            }
         }
         return $docs;
     }

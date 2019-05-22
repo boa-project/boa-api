@@ -1,0 +1,21 @@
+<Files .htaccess>
+order deny,allow
+deny from all
+</Files>
+
+<Files cron.php>
+order deny,allow
+deny from all
+</Files>
+
+<Files properties.json>
+order deny,allow
+deny from all
+</Files>
+
+RewriteEngine on
+
+RewriteCond %{REQUEST_URI} !(.*)index.php(.*)
+RewriteCond %{REQUEST_URI} !(.*)/public/(.*)
+RewriteRule ^(.*)$ index.php/$1 [PT]
+

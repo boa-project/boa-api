@@ -235,7 +235,9 @@ class Resource extends ComplexObject {
         if (isset($path)) {
 
             if (strpos($path, '.alternate/') === 0) {
-                $path = ltrim($path, '.alternate/');
+                $path = ltrim($path, '.alternate');
+                // Fix. For some reasone, when end with / remove de next 'e' letter.
+                $path = ltrim($path, '/');
                 $alternate = true;
             }
 

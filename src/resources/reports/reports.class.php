@@ -48,38 +48,4 @@ class Reports extends ComplexObjectList {
         parent::__construct($queryDriver, 'reports', false);
     }
 
-    public function getSocialReports($resource) {
-
-        $types = array(Report::TYPE_VIEWS, Report::TYPE_SCORE, Report::TYPE_COMMENTS);
-        $reports = $this->_driver->getSocialReports($resource, $types);
-
-        $social = new stdClass();
-        foreach ($types as $type) {
-            if ($type == Report::TYPE_SCORE) {
-                if (!property_exists($social, $type)) {
-                    $value = array();
-                }
-
-                foreach ($reports as $report) {
-                    if ($report->type == $type) {
-                        $value[$report->context] = (int)$report->value;
-                    }
-                }
-            }
-            else {
-                $value = 0;
-                foreach ($reports as $report) {
-                    if ($report->type == $type) {
-                        $value = (int)$report->value;
-                        break;
-                    }
-                }
-            }
-
-            $social->$type = $value;
-        }
-
-        return $social;
-    }
-
 }

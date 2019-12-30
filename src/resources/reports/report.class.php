@@ -67,12 +67,13 @@ class Report extends ComplexObject {
         }
     }
 
-    public function getDataList($timeinit, $timeend, $number, $start_on) {
+    public function getDataList($timeinit, $timeend, $number, $start_on, $catalogueid = null) {
         $method = $this->type . 'Data';
         $rows = $this->_driver->$method($timeinit, $timeend, $number, $start_on);
 
+        $response = array();
         if (is_array($rows) && count($rows) > 0 && property_exists($rows[0], 'resource')) {
-            foreach ($rows as $row) {
+            foreach ($rows as $key => $row) {
                 $row->catalogue = '';
                 $row->title = '';
 
@@ -80,17 +81,24 @@ class Report extends ComplexObject {
                     $resource = Resource::getUniversalResourceInfo($row->resource);
                     $catalogue = $resource->getCatalogue();
                     $row->catalogue = $catalogue->alias;
-                    if (property_exists($resource->manifest, 'title')) {
-                        $row->title = $resource->manifest->title;
-                    } else if ($resource->manifest->is_a == 'dro') {
-                        $row->title = $resource->metadata->general->title->none;
+
+                    if (!$catalogueid || $catalogue->alias == $catalogueid) {
+                        $response[] = $row;
+
+                        if (property_exists($resource->manifest, 'title')) {
+                            $row->title = $resource->manifest->title;
+                        }
+                        else if ($resource->manifest->is_a == 'dro') {
+                            $row->title = $resource->metadata->general->title->none;
+                        }
                     }
+
                 } catch(Exception $e) {
                 }
 
             }
         }
 
-        return $rows;
+        return $response;
     }
 }

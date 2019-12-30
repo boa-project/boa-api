@@ -60,6 +60,8 @@ class RestResource_Reports extends RestResource {
                 return false;
             }
 
+            $catalogueid = isset($resources->Resources->c) ? $resources->Resources->c : null;
+
             // Require filter reports.
             $timeinit   = (isset($params['timeinit']) && is_numeric($params['timeinit'])) ?
                                 intval($params['timeinit']) :
@@ -71,7 +73,7 @@ class RestResource_Reports extends RestResource {
             $start_on   = (isset($params['(s)']) && is_numeric($params['(s)'])) ? intval($params['(s)']) : null;
 
             $report = new Report($reporttype);
-            $data = $report->getDataList($timeinit, $timeend, $number, $start_on);
+            $data = $report->getDataList($timeinit, $timeend, $number, $start_on, $catalogueid);
         }
 
         Restos::using('resources.reports.restmapping_reports');

@@ -28,6 +28,9 @@
                 ],
                 "DefaultEngine" : "solr"
             }
+        },
+        "reports" : {
+            "AccessToken" : "<RANDOM_BASE64_STRING>"
         }
     },
     "ComponentsConfiguration" : {

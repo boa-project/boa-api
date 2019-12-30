@@ -59,7 +59,18 @@ class Driver_BoA {
      *
      */
     public function getCataloguesList() {
-        return $this->getApiBoACall("catalogs");
+        $list = $this->getApiBoACall("catalogs");
+        $catalogues = array();
+
+        if (is_array($list)) {
+            foreach($list as $one) {
+                if ($one->type == 'dco') {
+                    $catalogues[] = $one;
+                }
+            }
+        }
+
+        return $catalogues;
     }
 
     /**

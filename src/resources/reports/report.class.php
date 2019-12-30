@@ -71,6 +71,7 @@ class Report extends ComplexObject {
         $method = $this->type . 'Data';
         $rows = $this->_driver->$method($timeinit, $timeend, $number, $start_on);
 
+        $response = array();
         if (is_array($rows) && count($rows) > 0 && property_exists($rows[0], 'resource')) {
             foreach ($rows as $key => $row) {
                 $row->catalogue = '';
@@ -79,12 +80,11 @@ class Report extends ComplexObject {
                 try {
                     $resource = Resource::getUniversalResourceInfo($row->resource);
                     $catalogue = $resource->getCatalogue();
+                    $row->catalogue = $catalogue->alias;
 
-                    if ($catalogueid && $catalogue->alias != $catalogueid) {
-                        unset($rows[$key]);
-                    }
-                    else {
-                        $row->catalogue = $catalogue->alias;
+                    if (!$catalogueid || $catalogue->alias == $catalogueid) {
+                        $response[] = $row;
+
                         if (property_exists($resource->manifest, 'title')) {
                             $row->title = $resource->manifest->title;
                         }
@@ -92,15 +92,13 @@ class Report extends ComplexObject {
                             $row->title = $resource->metadata->general->title->none;
                         }
                     }
+
                 } catch(Exception $e) {
-                    if (empty($row->catalogue)) {
-                        unset($rows[$key]);
-                    }
                 }
 
             }
         }
 
-        return $rows;
+        return $response;
     }
 }

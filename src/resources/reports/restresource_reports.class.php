@@ -73,7 +73,11 @@ class RestResource_Reports extends RestResource {
             $start_on   = (isset($params['(s)']) && is_numeric($params['(s)'])) ? intval($params['(s)']) : null;
 
             $report = new Report($reporttype);
-            $data = $report->getDataList($timeinit, $timeend, $number, $start_on, $catalogueid);
+
+            // Results are included in an object because the call is to a specific resource
+            // so the response is an object not an array.
+            $data = new stdClass();
+            $data->rows = $report->getDataList($timeinit, $timeend, $number, $start_on, $catalogueid);
         }
 
         Restos::using('resources.reports.restmapping_reports');

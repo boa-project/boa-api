@@ -71,11 +71,17 @@ class Resource extends ComplexObject {
             Restos::throwException(null, RestosLang::get('searchengine.catalogpathnotfound', 'boa', $catalog_id), 404);
         }
 
-        $decodeid = base64_decode($id, true);
+        // Decode only if id is a base64 string.
+        if (strpos($id, '@') === false) {
+            $decodeid = base64_decode($id, true);
 
-        if ($decodeid === false) {
-            Restos::throwException(null, RestosLang::get('searchengine.badid', 'boa', $id), 404);
+            if ($decodeid === false) {
+                Restos::throwException(null, RestosLang::get('searchengine.badid', 'boa', $id), 404);
+            }
+        } else {
+            $decodeid = $id;
         }
+
 
         $manifest = "{}";
         $metadataPath = "";
@@ -315,5 +321,33 @@ class Resource extends ComplexObject {
     public static function isPreviewPath($path) {
         $slices = explode('/', $path);
         return (strpos($path, '.alternate/') === 0 && in_array($slices[count($slices) - 1], self::PREVIEW_NAMES));
+    }
+
+    public function getCatalogue() {
+        return $this->_catalog;
+    }
+
+    public static function getCatalogues() {
+        $data = Restos::$DefaultRestGeneric->getDriverData("resources");
+
+        $query_driver = DriverManager::getDriver('BoA', $data->Properties, 'resources.resources');
+        return $query_driver->getCataloguesList();
+    }
+
+    /**
+     *
+     * It search a resource into all catalogues and return the resource manifest.
+     *
+     */
+    public static function getUniversalResourceInfo($resourceid) {
+        $catalogues = self::getCatalogues();
+
+        foreach ($catalogues as $catalogue) {
+            if (file_exists($catalogue->path . '/' . $resourceid)) {
+                return new Resource($catalogue->alias, $resourceid);
+            }
+        }
+
+        return null;
     }
 }

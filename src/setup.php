@@ -2,17 +2,17 @@
 
 /*
  *  This file is part of Restos software
- * 
+ *
  *  Restos is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  Restos is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with Restos.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -47,6 +47,10 @@ set_error_handler('restos_exceptions_error_handler');
 if (defined('RESTOS_CLIENT_MODE') && RESTOS_CLIENT_MODE) {
     Restos::$ExecutionType = Restos::EXECUTION_CLIENT;
 }
+
+// Pear include path to third_party/pear so that includes and requires will search there for files before anywhere else
+ini_set('include_path', RESTOS_ABSOLUTE_PATH . 'third_party/pear' . PATH_SEPARATOR . ini_get('include_path'));
+
 
 $file_properties_name = 'properties.json';
 
@@ -97,11 +101,11 @@ function restos__autoload($class_name) {
                 break;
             default:
                 $pos = strpos($class_name, '_');
-                
+
                 if ($pos !== null) {
                     $type = substr($class_name, 0, $pos);
                     $name = substr($class_name, $pos + 1);
-                    
+
                     switch ($type){
                         case 'driver':
                             if (file_exists(RESTOS_ABSOLUTE_PATH . 'drivers/' . $name . '/' . $class_name . '.class.php')) {

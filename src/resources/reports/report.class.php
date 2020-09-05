@@ -79,6 +79,11 @@ class Report extends ComplexObject {
 
                 try {
                     $resource = Resource::getUniversalResourceInfo($row->resource);
+
+                    if (!$resource) {
+                        continue;
+                    }
+
                     $catalogue = $resource->getCatalogue();
                     $row->catalogue = $catalogue->alias;
 

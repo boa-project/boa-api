@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `boaapi_scores` (
   `updated_at` int(11) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   INDEX boaapi_scores_resource (`resource`)
-) DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8 ROW_FORMAT=COMPRESSED;
 
 -- --------------------------------------------------------
 
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS `boaapi_comments` (
   `updated_at` int(11) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   INDEX boaapi_comments_resource (`resource`)
-) DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8 ROW_FORMAT=COMPRESSED;
 
 -- --------------------------------------------------------
 

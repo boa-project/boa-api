@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `boaapi_counters` (
   PRIMARY KEY (`id`),
   INDEX boaapi_counters_resource (`resource`),
   INDEX boaapi_counters_restype (`resource`, `type`)
-) DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8 ROW_FORMAT=COMPRESSED;
 
 -- --------------------------------------------------------
 

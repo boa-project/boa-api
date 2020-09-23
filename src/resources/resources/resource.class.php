@@ -107,6 +107,11 @@ class Resource extends ComplexObject {
         if (strpos($decodeid, '/') === false){
             // It is a root Object.
             $manifestPath = $path . $realpath . "/.manifest.published";
+
+            if (!file_exists($manifestPath)) {
+                Restos::throwException(null, RestosLang::get('notfound'), 404);
+            }
+
             $manifestText = file_get_contents($manifestPath);
             $json = json_decode($manifestText);
 

@@ -137,7 +137,7 @@ class Resource extends ComplexObject {
                 if ($altern_path = $this->getAlternatePath()) {
                     $altern_path .= '/content/' . $manifest_object->entrypoint;
 
-                    $manifest_object->alternate = $altern_path;
+                    //$manifest_object->alternate = $altern_path;
                     if (file_exists($altern_path)) {
 
                         $files = scandir($altern_path,  SCANDIR_SORT_NONE);

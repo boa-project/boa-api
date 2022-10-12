@@ -77,6 +77,8 @@ class Solr_boa_indexer {
      */
     private $_client;
 
+    private static $_refreshed = false;
+
     public function __construct ($properties, $cron) {
         if(!is_object($properties)) {
             throw new Exception('Properties object is required.');
@@ -88,7 +90,7 @@ class Solr_boa_indexer {
     }
 
     /**
-     * 
+     *
      * Visit all indexable objects on the $path catalog
      * @param $catalog Object that has the root path for the BoA catalog to index and the catalog alias
      */
@@ -108,12 +110,17 @@ class Solr_boa_indexer {
             if (!$client->deleteDocs(array("catalog_id" => $this->_catalog_id, "-execution_id" => $this->_execution_id))){ //Remove all docs
                 $this->addErrorLog("indexCatalog", "deleting all docs", $client->errorMessage());
                 return false;
-            } 
+            }
         }
 
-        if (preg_match('/^(All|Schema)$/', $this->_properties->Rebuild) && !$this->refreshSchema()) {
-            return false;
-        } 
+        if (preg_match('/^(All|Schema)$/', $this->_properties->Rebuild) && !self::$_refreshed) {
+
+            if ($this->refreshSchema()) {
+                self::$_refreshed = true;
+            } else {
+                return false;
+            }
+        }
 
         foreach(array_chunk($entries, $CHUNK_SIZE) as $chunk){
             //get doc ids for this chunk
@@ -178,7 +185,7 @@ class Solr_boa_indexer {
         $content = file_get_contents($manifestPath);
         $json = json_decode($content);
         $id = isset($json->manifest) && isset($json->manifest->id) ? $json->manifest->id : $dirname;
-        
+
         if ($hasChanged){
             $this->clearForIndexation($json);
             $doc = json_encode($json);
@@ -199,7 +206,7 @@ class Solr_boa_indexer {
             $this->addErrorLog("visitObjectContent", "getting children for $id", $client->errorMessage());
             return false;
         }
-        
+
         foreach($children as $idx => $child){
             $path = str_replace(dirname($dir)."/", "", $child);
             $info = isset($children_info[$path]) ? $children_info[$path] : null;
@@ -249,6 +256,12 @@ class Solr_boa_indexer {
             return false;
         }
 
+        $dynamicFields = $client->getDynamicFields();
+        if ($dynamicFields === false){
+            $this->addErrorLog("refreshSchema", "getting dinamic fields", $client->errorMessage());
+            return false;
+        }
+
         $schemaCommands = array("delete-copy-field" => array(), "delete-field" => array(), "add-field" => array(), "add-copy-field" => array());
 
         //Remove copy fields
@@ -266,15 +279,25 @@ class Solr_boa_indexer {
                 $schemaCommands["delete-field"][] = array("name" => $field->name);
             }
         }
+        //Remove dynamic fields if they already exists
+        foreach($dynamicFields as $field){
+            if (in_array($field->name, ['random*'])) {
+                $schemaCommands["delete-dynamic-field"][] = array("name" => $field->name);
+            }
+        }
 
         $commands = @simplexml_load_file(realpath(dirname(__FILE__)) . "/default_schema_commands.xml");
 
         foreach ($commands->add_field as $add_field) {
             $schemaCommands["add-field"][] = $this->simpleXMLElementToArray($add_field);
         }
-        
+
         foreach ($commands->add_copy_field as $add_copy_field) {
             $schemaCommands["add-copy-field"][] = $this->simpleXMLElementToArray($add_copy_field);
+        }
+
+        foreach ($commands->add_dynamic_field as $add_dynamic_field) {
+            $schemaCommands["add-dynamic-field"][] = $this->simpleXMLElementToArray($add_dynamic_field);
         }
 
         foreach ($schemaCommands as $command => $data) {

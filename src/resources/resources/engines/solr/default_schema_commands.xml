@@ -86,7 +86,7 @@
   <add_copy_field source="metadata.clasification.description.*" dest="metadata.clasification.description" />
   <add_copy_field source="metadata.clasification.taxon_path.source.*" dest="metadata.clasification.taxon_path.source" />
   <add_copy_field source="metadata.clasification.taxon_path.id.*" dest="metadata.clasification.taxon_path.id" />
-  <!--Full text index-->  
+  <!--Full text index-->
   <add_copy_field source="manifest.author" dest="_text_" />
   <add_copy_field source="manifest.author.*" dest="_text_" />
   <add_copy_field source="manifest.title" dest="_text_" />
@@ -137,4 +137,5 @@
   <add_copy_field source="metadata.clasification.taxon_path.source.*" dest="_text_" /-->
   <add_copy_field source="metadata.clasification.taxon_path.id" dest="_text_" />
   <add_copy_field source="metadata.clasification.taxon_path.id.*" dest="_text_" />
+  <add_dynamic_field name="random*" type="random" indexed="true" stored="false" />
 </schema_commands>

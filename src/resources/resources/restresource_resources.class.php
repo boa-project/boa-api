@@ -109,6 +109,7 @@ class RestResource_Resources extends RestResource {
 
                 $number     = (isset($params['(n)']) && is_numeric($params['(n)'])) ? $params['(n)'] : null;
                 $start_on   = (isset($params['(s)']) && is_numeric($params['(s)'])) ? $params['(s)'] : null;
+                $sort       = isset($params['(sort)']) ? $params['(sort)'] : null;
                 $mode       = (isset($params['(mode)']) && preg_match("/^(full|basic)$/i", ($params['(mode)'])) ? $params['(mode)'] : 'basic'); //Mode, default to basic
 
                 $filters = new stdClass();
@@ -151,7 +152,7 @@ class RestResource_Resources extends RestResource {
                 $engine = isset($params['(engine)']) ? $params['(engine)'] : null;
 
                 $resources_list = new Resources($engine);
-                $data = $resources_list->execute($query, $number, $start_on, $filters, $mode);
+                $data = $resources_list->execute($query, $number, $start_on, $filters, $mode, $sort);
 
                 $executed_queries = Restos::getSession('resource', 'queries', 'executed', array());
                 // Only save the first 1000 queries in a session.

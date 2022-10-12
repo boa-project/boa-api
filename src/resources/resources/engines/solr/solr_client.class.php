@@ -108,7 +108,7 @@ class Solr_client {
     }
 
     /**
-     * 
+     *
      * Issue a Solr delete documents request
      * @param $restrictions Restrictions that will restrict the delete query
      * @param $operator Optional operator to join the restrictions, default to AND
@@ -126,7 +126,7 @@ class Solr_client {
         $response = $this->_ch->post($url, $payload);
 
         $this->handleResponse($response);
-        
+
         if ($this->hasError()){
             return false;
         }
@@ -134,7 +134,7 @@ class Solr_client {
     }
 
     /**
-     * 
+     *
      * Issue a Solr update documents request
      * @param $payload JSon string with the documents to create/update
      * @param $partial Where this is a partial or full update. Defaults to false, if updating an existing document this and not passing all fields, this should be set to true
@@ -154,29 +154,29 @@ class Solr_client {
     }
 
     /**
-     * 
+     *
      * Sets which fields will be returned when returned documents not transformed
      * @param Array or comma separated list of fields
      */
     public function setOutputFields($fields){
-        $this->_fields = (is_array($fields) ? $fields : 
+        $this->_fields = (is_array($fields) ? $fields :
             (empty($fields) ? array() : explode(',', $fields)));
     }
 
     /**
-     * 
+     *
      * Issue a Solr get documents request
      * @param $ids The id or ids of documents to retrieve
      */
     public function getDocuments($ids, $transform = true){
-        if (is_array($ids)) $ids = implode(',', $ids);        
-        
+        if (is_array($ids)) $ids = implode(',', $ids);
+
         $url = $this->_coreURI . "/get?fl=id,updated_at&ids=" . $ids;
         return $this->getDocs($url, $transform);
     }
 
     /**
-     * 
+     *
      * Issue a Solr get documents request
      * @param $ids The id or ids of documents to retrieve
      */
@@ -189,7 +189,7 @@ class Solr_client {
     }
 
     /**
-     * 
+     *
      * Issue a Solr get documents request based on a parent_id
      * @param $parend_id Id of the document root for which you are requesting children
      */
@@ -198,7 +198,7 @@ class Solr_client {
     }
 
     /**
-     * 
+     *
      * Issue a Solr get schema fields request
      */
     public function getFields(){
@@ -213,7 +213,7 @@ class Solr_client {
     }
 
     /**
-     * 
+     *
      * Issue a Solr get schema copy fields request
      */
     public function getCopyFields(){
@@ -228,7 +228,22 @@ class Solr_client {
     }
 
     /**
-     * 
+     *
+     * Issue a Solr get schema dynamic fields request
+     */
+    public function getDynamicFields(){
+        $url = $this->_coreURI . "/schema/dynamicfields";
+        $response = $this->_ch->get($url);
+
+        $this->handleResponse($response);
+        if ($this->hasError()){
+            return false;
+        }
+        return $this->_result->dynamicFields;
+    }
+
+    /**
+     *
      * Issue a Solr schema update request
      * @param $command Any of add-field, delete-field, add-copy-field, delete-copy-field
      * @param $operator Optional operator to join the restrictions, default to AND
@@ -238,7 +253,7 @@ class Solr_client {
         $payload = "{\"$command\":$data }";
         $response = $this->_ch->post($url, $payload);
         $this->handleResponse($response);
-        
+
         if ($this->hasError()){
             return false;
         }
@@ -248,7 +263,7 @@ class Solr_client {
         $url = $this->_rootURI . "/admin/cores?action=RELOAD&core=$core";
         $response = $this->_ch->get($url);
         $this->handleResponse($response);
-        
+
         if ($this->hasError()){
             return false;
         }
@@ -256,7 +271,7 @@ class Solr_client {
     }
 
     /**
-     * 
+     *
      * Issue a Solr get documents request based on a parent_id
      * @param $parend_id Id of the document root for which you are requesting children
      */
@@ -271,7 +286,7 @@ class Solr_client {
     }
 
     /**
-     * 
+     *
      * Returns the error message of the last request if any
      */
     public function errorMessage(){
@@ -287,7 +302,7 @@ class Solr_client {
     }
 
     /**
-     * 
+     *
      * Issue a Solr get documents request
      * @param $url Get documents url including query and other restriction parameters
      */
@@ -300,9 +315,9 @@ class Solr_client {
         }
 
         $info = $this->_result;
-        
+
         if (is_object($info) && property_exists($info, 'response')) {
-            return $transform ? 
+            return $transform ?
                 array_reduce($info->response->docs, array($this, 'parseDocBaseInfo'), array()) :
                 array_reduce($info->response->docs, array($this, 'parseDocFields'), array());
         }
@@ -310,25 +325,25 @@ class Solr_client {
     }
 
     /**
-     * 
+     *
      * Array reduce callback to assign last_update field on local time
      * @param $output Carry out variable
      * @param $item Current 'reduce' item
      */
-    private function parseDocBaseInfo($output, $item){ 
+    private function parseDocBaseInfo($output, $item){
         $output[$item->id] = array(
             "last_update" => DateTime::createFromFormat('Y-m-d\TH:i:s.u+', $item->updated_at, $this->_UTCTZ)
             );
-        return $output; 
+        return $output;
     }
 
     /**
-     * 
+     *
      * Array reduce callback to assign fields from rawdoc
      * @param $output Carry out variable
      * @param $item Current 'reduce' item
      */
-    private function parseDocFields($output, $item){ 
+    private function parseDocFields($output, $item){
         $obj = new StdClass(); // array("id" => $item->id, "catalog_id" => $item->catalog_id);
         $doc = json_decode($item->rawdoc);
 
@@ -368,15 +383,15 @@ class Solr_client {
             $target->$field = $partvalue;
         }
         $output[] = $obj;
-        return $output; 
+        return $output;
     }
 
     /**
-     * 
+     *
      * Returns true if the las request results in an error
      */
-    private function hasError(){ 
-        return $this->_errno != 0; 
+    private function hasError(){
+        return $this->_errno != 0;
     }
 
     /**
@@ -394,7 +409,7 @@ class Solr_client {
             $this->_error = $this->_ch->error;
             return false;
         }
-        
+
         $result = json_decode($response);
         if ($result == NULL){
             $this->_errno = Solr_client::ERRCODE_UNABLE_TO_PARSE_RESPONSE;

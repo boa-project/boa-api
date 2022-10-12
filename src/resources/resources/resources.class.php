@@ -77,8 +77,8 @@ class Resources extends ComplexObjectList {
 
     }
 
-    public function execute($query = null, $number = null, $start_on = null, $filters = null, $mode = null) {
-        $list = $this->_engineobject->queryExecute($query, $number, $start_on, $filters, $mode);
+    public function execute($query = null, $number = null, $start_on = null, $filters = null, $mode = null, $sort = null) {
+        $list = $this->_engineobject->queryExecute($query, $number, $start_on, $filters, $mode, $sort);
 
         foreach($list as $key => $one) {
 

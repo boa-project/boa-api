@@ -143,6 +143,7 @@ class Solr_querybuilder {
         }
         $this->_query['fl'] = empty($this->_properties->BasicFields) ? 'id,catalog_id' : $this->_properties->BasicFields;
     }
+
     /**
      *
      *
@@ -152,6 +153,15 @@ class Solr_querybuilder {
     public function setPagination($start, $take){
         $this->_query['start'] = $start;
         $this->_query['rows'] = $take;
+    }
+
+    /**
+     *
+     *
+     * @param string $sort Sort full sentence
+     */
+    public function setSort($sort){
+        $this->_query['sort'] = $sort;
     }
 
     /**

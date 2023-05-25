@@ -298,6 +298,14 @@ class RestReceive extends Entity {
     }
 
     /**
+     * Return if the operation is HEAD
+     * @return bool
+     */
+    public function isHead() {
+        return $this->_method == 'HEAD';
+    }
+
+    /**
      * Return a method name
      *
      * @return string

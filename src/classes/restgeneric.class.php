@@ -230,6 +230,9 @@ class RestGeneric extends Entity {
             case $this->RestReceive->isOptions():
                 $implemented = $resource_controller->onOptions();
                 break;
+            case $this->RestReceive->isHead():
+                $implemented = $resource_controller->onHead();
+                break;
             default:
                 $implemented = false;
         }

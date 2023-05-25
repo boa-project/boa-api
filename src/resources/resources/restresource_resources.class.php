@@ -123,7 +123,7 @@ class RestResource_Resources extends RestResource {
                 $filters->metas = isset($params['(meta)']) ? $params['(meta)'] : null;
 
                 if (!is_array($filters->metas)) {
-//                    $filters->metas[$filters->metas] = "*";
+                    //$filters->metas[$filters->metas] = "*";
                 }
 
                 if (isset($params['(ext)'])) {
@@ -177,6 +177,38 @@ class RestResource_Resources extends RestResource {
 
         $this->_restGeneric->RestResponse->Content = $mapping->getMapping($this->_restGeneric->RestResponse->Type);
 
+        return true;
+    }
+
+    /**
+    * When request verb is head
+    * @see resources/RestResource::onHead()
+    * @return bool
+    */
+    public function onHead(){
+        $resources = $this->_restGeneric->RestReceive->getResources();
+
+        // The catalog always is required.
+        if (!isset($resources->Resources->c)) {
+            return false;
+        }
+
+        if ($resources->isSpecificResources()) {
+
+            try {
+                $resource = new Resource($resources->Resources->c, $resources->getResourceId());
+                $data = $resource->getPrototype();
+
+                // Only confirm the existence of the resource.
+                return true;
+            }
+            catch (ObjectNotFoundException $e) {
+                Restos::throwException(null, RestosLang::get('notfound'), 404);
+            }
+
+        }
+
+        // If the request is not specific, then it is a search and require a confirmation exist.
         return true;
     }
 

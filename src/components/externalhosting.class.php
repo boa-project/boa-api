@@ -37,6 +37,7 @@ class ExternalHosting extends DefaultComponent {
             header('Access-Control-Allow-Origin: ' . $data->Properties->HostAllowed);
             header('Access-Control-Allow-Headers: Origin,X-Requested-With,Content-Type,Accept,X-Observation-blockedkey');
             header('Access-Control-Allow-Credentials: true');
+            header('Content-Security-Policy: frame-ancestors ' . $data->Properties->HostAllowed);
 
             if ($rest->RestReceive->isOptions()) {
                 $rest->RestResponse->send();

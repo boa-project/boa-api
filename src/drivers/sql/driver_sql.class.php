@@ -54,7 +54,7 @@ class Driver_sql implements iPersistenceOperations {
      *
      * @param object $properties
      * @throws Exception - ConnectionString is required.
-     * @throws Exception - Others in PEAR MDB2.
+     * @throws Exception - Database connection / query failures.
      */
     public function __construct($properties){
         if(!is_object($properties)) {

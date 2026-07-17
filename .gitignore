@@ -1,0 +1,7 @@
+# Composer / PHPUnit
+/vendor/
+/.phpunit.cache/
+.phpunit.result.cache
+
+# Runtime config (also listed under src/.gitignore)
+/src/properties.json

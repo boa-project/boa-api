@@ -127,7 +127,7 @@ class Restos {
             // Cada posición de la expresión regular posee un dato de la URL
             // tomada de http://labs.apache.org/webarch/uri/rfc/rfc3986.html#regexp
             if (!isset($properties->Protocol)) {
-                $tmp_parts = explode('/', $_SERVER['SERVER_PROTOCOL']);
+                $tmp_parts = explode('/', $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1');
 
                 if (is_array($tmp_parts) && count($tmp_parts) > 0) {
                     $properties->Protocol = strtolower($tmp_parts[0]);
@@ -138,7 +138,7 @@ class Restos {
             }
 
             if (!isset($properties->UriBase)) {
-                $relative_path = ltrim($_SERVER['REQUEST_URI'], '/');
+                $relative_path = ltrim($_SERVER['REQUEST_URI'] ?? '/', '/');
 
                 if (isset($_SERVER['PATH_INFO'])) {
                     $relative_path = rtrim($relative_path, $_SERVER['PATH_INFO']);
@@ -150,7 +150,7 @@ class Restos {
 
                 $relative_path = rtrim($relative_path, Restos::$IndexFileName);
 
-                $properties->UriBase = $properties->Protocol . '://' . $_SERVER['SERVER_NAME'] . (empty($relative_path) ? '' : '/' . $relative_path);
+                $properties->UriBase = $properties->Protocol . '://' . ($_SERVER['SERVER_NAME'] ?? 'localhost') . (empty($relative_path) ? '' : '/' . $relative_path);
             }
         }
 

@@ -41,7 +41,7 @@ class Driver_authsql extends Driver_sql implements iAuthPersistenceOperations {
      * 
      * @param object $properties
      * @throws Exception - ConnectionString is required.
-     * @throws Exception - Others in PEAR MDB2.
+     * @throws Exception - Database connection / query failures.
      */
     public function __construct($properties){
 

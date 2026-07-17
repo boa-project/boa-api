@@ -48,7 +48,7 @@ class RestReceive extends Entity {
      */
     public function __construct($rest_generic){
 
-        $this->_method = strtoupper($_SERVER["REQUEST_METHOD"]);
+        $this->_method = strtoupper($_SERVER["REQUEST_METHOD"] ?? "GET");
         $this->_uri = $rest_generic->getResourcesURI();
         $this->_headers = apache_request_headers();
 
@@ -196,7 +196,7 @@ class RestReceive extends Entity {
      */
     public function getContentType () {
         if (!isset($this->_keys['content_type'])){
-            $this->_keys['content_type'] = $this->_headers['Content-Type'];
+            $this->_keys['content_type'] = $this->_headers['Content-Type'] ?? 'application/octet-stream';
         }
 
         return $this->_keys['content_type'];

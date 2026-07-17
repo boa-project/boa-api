@@ -35,6 +35,13 @@ if (!defined('RESTOS_INTERNAL')) {
     define('RESTOS_INTERNAL', true);
 }
 
+// Optional Composer autoload (doctrine/dbal, PHPUnit deps when present).
+// vendor/ lives at repo root (sibling of src/), not under RestOS.
+$restosComposerAutoload = dirname(rtrim(RESTOS_ABSOLUTE_PATH, '/')) . '/vendor/autoload.php';
+if (is_readable($restosComposerAutoload)) {
+    require_once $restosComposerAutoload;
+}
+
 /*CODE*/
 if (RESTOS_DEBUG_MODE) {
     ini_set('display_errors', 1);
@@ -43,14 +50,12 @@ if (RESTOS_DEBUG_MODE) {
 
 spl_autoload_register('restos__autoload');
 set_error_handler('restos_exceptions_error_handler');
-
 if (defined('RESTOS_CLIENT_MODE') && RESTOS_CLIENT_MODE) {
     Restos::$ExecutionType = Restos::EXECUTION_CLIENT;
 }
 
-// Pear include path to third_party/pear so that includes and requires will search there for files before anywhere else
-ini_set('include_path', RESTOS_ABSOLUTE_PATH . 'third_party/pear' . PATH_SEPARATOR . ini_get('include_path'));
-
+// PEAR/MDB2 is retired from runtime. third_party/pear remains in-tree unused;
+// Composer vendor/autoload (loaded above) provides Doctrine DBAL when installed.
 
 $file_properties_name = 'properties.json';
 

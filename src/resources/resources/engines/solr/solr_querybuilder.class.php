@@ -59,10 +59,23 @@ class Solr_querybuilder {
             'wt' => 'json'
         );
         $this->setMode();
+        // HTTP Solr_client only — no PECL SolrUtils dependency.
+    }
 
-        if (!class_exists('SolrUtils')) {
-            Restos::throwException(null, RestosLang::get('searchengine.solr.notphpextension', 'boa'), 500);
-        }
+    /**
+     * Escape special characters for Solr query syntax (PECL SolrUtils::escapeQueryChars parity).
+     *
+     * @param string $str
+     * @return string
+     */
+    public static function escapeQueryChars($str)
+    {
+        // PECL SolrUtils::escapeQueryChars parity (order: longer tokens then singles).
+        return preg_replace(
+            '/(\\\\|&&|\|\||[+\-!(){}\[\]^"~*?:\/])/',
+            '\\\\$1',
+            (string) $str
+        );
     }
     /*
       . id
@@ -183,7 +196,7 @@ class Solr_querybuilder {
         if ($docs === false){
 
             // To fix query errors on search.
-            $this->_query['q'] = SolrUtils::escapeQueryChars($query);
+            $this->_query['q'] = self::escapeQueryChars($query);
             $queryString = $this->getQueryString();
             $docs = $client->getDocumentsByQuery($queryString, false); //Do not transform response
 

@@ -1181,12 +1181,4 @@ class Connector_relationaldb {
         }
     }
 
-    /**
-     * @param mixed $err
-     * @return bool
-     * @deprecated PEAR errors are no longer produced on the DBAL path
-     */
-    static function isPearError($err){
-        return is_object($err) && (is_a($err, 'PEAR_Error') || is_a($err, 'MDB2_Error'));
-    }
 }
